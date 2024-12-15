@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-md rounded-lg p-8 max-w-lg text-center">
+    <!-- Error Icon -->
+    <div class="text-red-500 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m0-4h.01M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" />
+      </svg>
+    </div>
+
+    <!-- Error Message -->
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4">Oops! Something went wrong</h1>
+    <p class="text-gray-600 mb-6">
+      We encountered an error while processing your request. Please try again or contact support if the issue persists.
+    </p>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center space-x-4">
+      <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Go to Home
+      </a>
+      <button onclick="window.history.back()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">
+        Go Back
+      </button>
+    </div>
+  </div>
+</body>
+
+</html>

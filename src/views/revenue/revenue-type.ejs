@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounting Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-blue-50 h-screen">
+
+  <!-- Dashboard Layout -->
+  <div class="flex h-fit">
+    <!-- Sidebar -->
+    <%- include('../partials/nav') %>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Top Bar -->
+      <header class="bg-blue-100 shadow flex items-center justify-between px-6 py-4">
+        <button id="hamburger" class="lg:hidden text-blue-800" onclick="toggleSidebar()">
+          <span class="material-icons">menu</span>
+        </button>
+        <h2 class="text-xl font-semibold text-blue-800">Dashboard / REVENUE TYPE</h2>
+        <div class="flex items-center space-x-4">
+          <input type="text" placeholder="Search..." class="px-4 py-2 rounded border-gray-300">
+          <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full">
+        </div>
+      </header>
+
+      <!-- Main Dashboard -->
+      <div class="bg-white shadow-lg rounded-lg mx-auto my-6 p-8">
+        <h2 class="text-2xl font-semibold text-blue-800 mb-6">REVENUE TYPES</h2>
+
+        <!-- Table to display accounts -->
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-blue-100">
+              <th class="border px-4 py-2 text-left">Name</th>
+              <th class="border px-4 py-2 text-left">Amount</th>
+              <th class="border px-4 py-2 text-left">Associated Acc.</th>
+              <th class="border px-4 py-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Example data row -->
+           <!-- Example data row -->
+           <% rts.forEach(rt=> { %>
+            <tr>
+              <td class="border px-4 py-2"><%= rt.name %></td>
+              <td class="border px-4 py-2"><%= rt.amount %></td>
+              <td class="border px-4 py-2"><%= rt.vultAccount.name %> (<%= rt.vultAccount.accountNumber %>)</td>
+              <td class="border px-4 py-2">
+                <button class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700" onclick="openEditModal('01-001-100', 'Revenue', 'Description example')">
+                  Edit
+                </button>
+              </td>
+            </tr>
+            <% }); %>
+            <!-- Add more rows as needed -->
+          </tbody>
+        </table>
+
+        <!-- Buttons -->
+        <div class="mt-4 flex justify-between">
+          <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none" id="downloadCsvBtn">
+            Download CSV
+          </button>
+          <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 focus:outline-none" onclick="openCreateModal()">
+            Create New RT
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Modal -->
+  <div id="createModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 class="text-2xl font-semibold text-blue-800 mb-6">Create Revenue Type</h2>
+      <form  action="/api/v1/revenue/rt" method="POST">
+        <!-- Name -->
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+          <input type="text" id="name" name="name" placeholder="Revenue Type"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-4">
+          <label for="vultAccountId" class="block text-sm font-medium text-gray-700">Associated Acc.</label>
+          <select id="vultAccountId" name="vultAccountId" class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="" disabled selected>Select Account</option>
+    <% accounts.forEach(account => { %>
+      <option value="<%= account.id %>"><%= account.name %></option>
+    <% }); %>
+          </select>
+          
+        </div>
+        <!-- Submit Button -->
+        <div class="flex justify-between items-center">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none">
+            Create Account
+          </button>
+          <button type="button" class="text-gray-600 hover:text-gray-800" onclick="closeCreateModal()">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 class="text-2xl font-semibold text-blue-800 mb-6">Edit Account</h2>
+      <form id="editForm">
+        <!-- Revenue Amount -->
+        <div class="mb-4">
+          <label for="editAccountNumber" class="block text-sm font-medium text-gray-700">Account Number</label>
+          <input type="text" id="editAccountNumber" name="accountNumber" required
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Name -->
+        <div class="mb-4">
+          <label for="editName" class="block text-sm font-medium text-gray-700">Name</label>
+          <input type="text" id="editName" name="name"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Description -->
+        <!-- <div class="mb-4">
+          <label for="editDescription" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="editDescription" name="description" rows="3"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div> -->
+
+        <!-- Submit Button -->
+        <div class="flex justify-between items-center">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none">
+            Save Changes
+          </button>
+          <button type="button" class="text-gray-600 hover:text-gray-800" onclick="closeEditModal()">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('hidden');
+    }
+
+    function openCreateModal() {
+      document.getElementById('createModal').classList.remove('hidden');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.add('hidden');
+    }
+
+    function openEditModal(accountNumber, name, description) {
+      document.getElementById('editAccountNumber').value = accountNumber;
+      document.getElementById('editName').value = name;
+      document.getElementById('editDescription').value = description;
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    document.getElementById('downloadCsvBtn').addEventListener('click', function() {
+      // Add your CSV download logic here
+      alert('Download CSV functionality not yet implemented.');
+    });
+    
+  </script>
+</body>
+
+</html>

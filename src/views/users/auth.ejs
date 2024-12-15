@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-50">
+    <div class="flex flex-col md:flex-row w-11/12 md:w-3/4 lg:w-2/3 bg-white rounded-lg shadow-5g overflow-hidden">
+        <!-- Left Panel -->
+        <div class="w-full md:w-1/2 bg-blue-500 text-white p-8 flex flex-col justify-center">
+            <div id="info-section" class="text-center">
+                <h1 class="text-4xl font-bold mb-4" id="info-heading">Welcome Back!</h1>
+                <p class="mb-6 text-lg" id="info-text">to EDSU FIN. MANAGER</p>
+                <!-- <div class="my-auto">
+                    <p class="mb-2 text-lg" id="info-text">Are you a manager?</p>
+                    <p class="mb-2 text-md" id="info-text">Contact your admin to give you access to the system.</p>
+                  <button id="toggle-button" class="bg-white text-blue-500 px-6 py-2 rounded-md hover:bg-gray-100">Sign Up</button>
+          
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="w-full md:w-1/2 bg-white p-8">
+            <!-- Sign In Section -->
+            <div id="sign-in-section">
+                <h2 class="text-2xl font-bold mb-4 text-center text-gray-600">Sign In</h2>
+                <% if (typeof error !== 'undefined') { %>
+                    <div class="error">
+                      <p class="text-red-500 text-center"><%= error %></p>
+                    </div>
+                  <% } %>
+                <form action="/users/signin" method="POST">
+                    <input type="email" name="email" placeholder="Email" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <input type="password" name="password" placeholder="Password" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <button type="submit" class="w-full bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-white-600">Sign In</button>
+                </form>
+                <div class="mt-4 text-center">
+                    <a href="/" id="reset-password-link" class="text-blue-500">Forgot Password?</a>
+                </div>
+            </div>
+
+            <!-- Sign Up Section -->
+            <!-- <div id="sign-up-section" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center">Sign Up</h2>
+                <% if (typeof error !== 'undefined') { %>
+                    <div class="error">
+                      <p class="text-red-500 text-center"><%= error %></p>
+                    </div>
+                  <% } %>
+                <form action="/api/v1/users/signup" method="POST">
+                    <input type="text" name="firstName" placeholder="Reign" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <input type="text" name="lastName" placeholder="Moses" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <input type="email" name="email" placeholder="name.example@edouniversity.edu.ng" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <input type="password" name="password" placeholder="Password" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-blue-400">
+                    <input type="text" name="code" placeholder="Code" class="w-full p-3 mb-4 border rounded-md focus:ring-2 focus:ring-white-400">
+                    <button type="submit" class="w-full bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600">Sign Up</button>
+                </form>
+            </div> -->
+        </div>
+    </div>
+
+    <script>
+        // Get references to key elements
+const signInSection = document.getElementById("sign-in-section");
+const signUpSection = document.getElementById("sign-up-section");
+const infoHeading = document.getElementById("info-heading");
+const infoText = document.getElementById("info-text");
+const toggleButton = document.getElementById("toggle-button");
+
+// Toggle between Sign In and Sign Up sections
+toggleButton.addEventListener("click", () => {
+    if (signInSection.classList.contains("hidden")) {
+        // Show Sign In and update the left panel
+        signInSection.classList.remove("hidden");
+        signUpSection.classList.add("hidden");
+        infoHeading.textContent = "Welcome Back!";
+        infoText.textContent = "Sign in to.";
+        toggleButton.textContent = "Sign Up";
+    } else {
+        // Show Sign Up and update the left panel
+        signUpSection.classList.remove("hidden");
+        signInSection.classList.add("hidden");
+        infoHeading.textContent = "Hello, Friend!";
+        infoText.textContent = "Sign up.";
+        toggleButton.textContent = "Sign In";
+    }
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-blue-50 h-screen">
+  <div class="flex h-fit">
+    <!-- Sidebar -->
+    <%- include('../partials/nav') %>
+
+    <!-- Main Dashboard -->
+    <main class="flex-1 p-6 space-y-6">
+      <!-- Invoice Section -->
+      <div class="bg-white shadow p-6 rounded-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-blue-800">Invoices</h3>
+          <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            + New Invoice
+          </button>
+        </div>
+        <table class="w-full text-left border-collapse border border-gray-200" id="invoiceTable">
+          <thead>
+            <tr class="bg-blue-100 border-b border-gray-300">
+              <th class="p-2 border border-gray-300">Invoice Date</th>
+              <th class="p-2 border border-gray-300">Client</th>
+              <th class="p-2 border border-gray-300">Amount</th>
+              <th class="p-2 border border-gray-300">Status</th>
+              <th class="p-2 border border-gray-300">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% invoices.forEach(invoice => { %>
+              <tr>
+                <td class="p-2 border border-gray-300">
+                </td>
+                <td class="p-2 border border-gray-300"><%= invoice.client %></td>
+                <td class="p-2 border border-gray-300">₦<%= invoice.amount %></td>
+                <td class="p-2 border border-gray-300"><%= invoice.status %></td>
+                <td class="p-2 border border-gray-300">
+                  <button
+                    class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+                    onclick="openDetailsModal(<%= JSON.stringify(invoice) %>)">
+                    View
+                  </button>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice Details Modal -->
+  <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-xl font-semibold text-blue-800 mb-4">Invoice Details</h2>
+      <div id="detailsContent" class="space-y-2">
+        <!-- Details will be dynamically added here -->
+      </div>
+      <div class="flex justify-between items-center mt-4">
+        <button onclick="generateInvoice()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Generate Invoice
+        </button>
+        <button onclick="closeDetailsModal()" class="text-gray-600 hover:text-gray-800">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openDetailsModal(invoice) {
+      const detailsContent = document.getElementById('detailsContent');
+      detailsContent.innerHTML = `
+        <p><strong>Invoice Date:</strong> ${new Date(invoice.date).toLocaleDateString('en-US')}</p>
+        <p><strong>Client:</strong> ${invoice.client}</p>
+        <p><strong>Amount:</strong> ₦${invoice.amount}</p>
+        <p><strong>Status:</strong> ${invoice.status}</p>
+        <p><strong>Description:</strong> ${invoice.description || 'N/A'}</p>
+      `;
+      document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    function generateInvoice() {
+      const detailsContent = document.getElementById('detailsContent').innerHTML;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Invoice</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f9f9f9;
+                color: #333;
+              }
+              .invoice-container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              }
+              .invoice-header {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              .invoice-header h1 {
+                font-size: 24px;
+                color: #4A90E2;
+                margin: 0;
+              }
+              .invoice-header p {
+                margin: 5px 0;
+                font-size: 14px;
+                color: #666;
+              }
+              .invoice-logo {
+                max-width: 100px;
+                margin: 0 auto 10px;
+              }
+              .invoice-details p {
+                margin: 8px 0;
+                font-size: 16px;
+              }
+              .invoice-footer {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 14px;
+                color: #999;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="invoice-container">
+              <div class="invoice-header">
+                <img src="/path-to-logo.png" alt="Company Logo" class="invoice-logo">
+                <h1>Invoice</h1>
+                <p>Company Name</p>
+                <p>123 Business Avenue, City, Country</p>
+                <p>Phone: +123 456 7890 | Website: www.company.com</p>
+              </div>
+              <div class="invoice-details">
+                ${detailsContent}
+              </div>
+              <div class="invoice-footer">
+                <p>Thank you for your business!</p>
+                <p>This invoice was generated electronically and is valid without a signature.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  </script>
+</body>
+
+</html>

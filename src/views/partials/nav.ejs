@@ -1,0 +1,95 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<aside id="sidebar" class="w-72 bg-blue-800 text-white h-full p-6 hidden lg:block">
+    <h1 class="text-2xl font-bold mb-6">EDSU FIN MANAGER</h1>
+    <nav>
+      <ul class="space-y-4">
+        <!-- <li class="font-semibold text-lg">Management</li> -->
+        <li><a href="/" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a></li>
+        <li><a href="/funds" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-money-bill mr-2"></i> Vult</a></li>
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('revenue-dropdown')">
+            <i class="fas fa-chart-line mr-2"></i> Revenue
+          </button>
+          <ul id="revenue-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="/revenue" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-plus-circle mr-2"></i>Incoming Revenue</a></li>
+            <li><a href="/revenue-type" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-plus-circle mr-2"></i>Revenue Types</a></li>
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-calendar-day mr-2"></i>All Revenue</a></li>
+            <li><a href="/invoice" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-trash-alt mr-2"></i>Invoice</a></li>
+          </ul>
+        </li>
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('accounts-dropdown')">
+            <i class="fas fa-file-invoice mr-2"></i> Accounts
+          </button>
+          <ul id="accounts-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="/account/view" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-plus-circle mr-2"></i>Main Accounts</a></li>
+            <li><a href="/account/dvea" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-plus-circle mr-2"></i>DVEA</a></li>
+            <li><a href="/account/chart" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-calendar-day mr-2"></i>Charts</a></li>
+          </ul>
+        </li>
+        
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('assets-dropdown')">
+            <i class="fas fa-cogs mr-2"></i> Fixed Assets
+          </button>
+          <ul id="assets-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-plus-circle mr-2"></i> Asset Registration</a></li>
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-calendar-day mr-2"></i> Depreciation</a></li>
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-trash-alt mr-2"></i> Asset Disposal</a></li>
+          </ul>
+        </li>
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('expenditure-dropdown')">
+            <i class="fas fa-money-bill-wave mr-2"></i> Expenditures
+          </button>
+          <ul id="expenditure-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-file-invoice mr-2"></i> Expense Request</a></li>
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-wallet mr-2"></i> Budget Allocation</a></li>
+          </ul>
+        </li>
+        <!-- <li><a href="#" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-chart-line mr-2"></i> Revenue</a></li> -->
+        <li><a href="/transactions" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-credit-card mr-2"></i> Transactions</a></li>
+        <li><a href="#" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-money-bill mr-2"></i> Payroll</a></li>
+        <!-- <li><a href="/user" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-users mr-2"></i> </a></li> -->
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('users-dropdown')">
+            <i class="fas fa-users mr-2"></i> Users
+          </button>
+          <ul id="users-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="/profile" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-user mr-2"></i> Profile</a></li>
+            <li><a href="/users" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-users mr-2"></i> Users</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="mt-8 space-y-4">
+        <li class="font-semibold text-lg">Analytics</li>
+        <li>
+          <button class="flex items-center py-2 px-4 rounded w-full text-left hover:bg-blue-700" onclick="toggleDropdown('reports-dropdown')">
+            <i class="fas fa-chart-pie mr-2"></i> Reports
+          </button>
+          <ul id="reports-dropdown" class="space-y-2 pl-6 hidden">
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-file-alt mr-2"></i> Financial Reports</a></li>
+            <li><a href="#" class="flex items-center py-2 px-4 hover:bg-blue-700"><i class="fas fa-search mr-2"></i> Audit Trail</a></li>
+          </ul>
+        </li>
+        <li><a href="#" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-book mr-2"></i> System Logs</a></li>
+        <li><a href="#" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fas fa-cogs mr-2"></i> Settings</a></li>
+        <li><a href="/logout" class="flex items-center py-2 px-4 rounded hover:bg-blue-700"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</a></li>
+      </ul>
+    </nav>
+  </aside>
+<!-- Main Content -->
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('hidden');
+    }
+
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id);
+      dropdown.classList.toggle('hidden');
+    }
+  </script>
+
+
+

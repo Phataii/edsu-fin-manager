@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revenue Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-blue-50 h-screen">
+  <div class="flex h-fit">
+    <!-- Sidebar -->
+    <%- include('../partials/nav') %>
+
+    <!-- Main Dashboard -->
+    <main class="flex-1 p-6 space-y-6">
+      <!-- Revenue Transactions -->
+      <div class="bg-white shadow p-6 rounded-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-blue-800">Revenue Transactions</h3>
+          <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            + New Transaction
+          </button>
+        </div>
+        <table class="w-full text-left border-collapse border border-gray-200" id="transactionTable">
+          <thead>
+            <tr class="bg-blue-100 border-b border-gray-300">
+              <th class="p-2 border border-gray-300">Trx Date</th>
+              <th class="p-2 border border-gray-300">Source</th>
+              <th class="p-2 border border-gray-300">Type</th>
+              <th class="p-2 border border-gray-300">Amount</th>
+              <th class="p-2 border border-gray-300">Mode</th>
+              <th class="p-2 border border-gray-300">Ref</th>
+              <th class="p-2 border border-gray-300">Settled</th>
+              <th class="p-2 border border-gray-300">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% revenues.forEach(r => { %>
+              <tr>
+                <td class="p-2 border border-gray-300">
+                  <%= new Date(r.transactionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                </td>
+                <td class="p-2 border border-gray-300"><%= r.source %></td>
+                <td class="p-2 border border-gray-300"><%= r.revenueType %></td>
+                <td class="p-2 border border-gray-300">₦<%= r.amount %></td>
+                <td class="p-2 border border-gray-300 text-red-500"><%= r.mode %></td>
+                <td class="p-2 border border-gray-300 text-green-500"><%= r.ref %></td>
+                <td class="p-2 border border-gray-300 text-green-500"><%= r.settled ? 'Yes' : 'No' %></td>
+                <td class="border px-4 py-2">
+                  <button
+                    class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+                    onclick="openDetailsModal(<%= JSON.stringify(r) %>)">
+                    View
+                  </button>
+                  <% if (!r.settled) { %>
+                    <a href="/api/v1/revenue/settle?<%= r.id %>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                      Settle
+                    </a>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+   <!-- Create Modal -->
+   <div id="createModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-5xl">
+      <h2 class="text-2xl font-semibold text-blue-800 mb-6">Enter transaction details</h2>
+      <form action="/api/v1/revenue" method="POST" class="grid grid-cols-3 gap-6">
+        <!-- Deposit Ticket ID -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="dtid" class="block text-sm font-medium text-gray-700">Deposit Ticket ID</label>
+          <input type="text" id="dtid" name="dtid" required placeholder="Enter DTID"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Source -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="source" class="block text-sm font-medium text-gray-700">Source</label>
+          <input type="text" id="source" name="source" required placeholder="E.g., UTME"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Amount -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
+          <input type="number" id="amount" name="amount" required placeholder="5000"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Date Received -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="dateReceived" class="block text-sm font-medium text-gray-700">Date Received</label>
+          <input type="date" id="dateReceived" name="dateReceived" required
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Transaction Date -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="transactionDate" class="block text-sm font-medium text-gray-700">Transaction Date</label>
+          <input type="date" id="transactionDate" name="transactionDate" required
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Mode -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="mode" class="block text-sm font-medium text-gray-700">Mode</label>
+          <select id="mode" name="mode" required
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <% paymentModes.forEach(function(mode) { %>
+              <option value="<%= mode %>"><%= mode %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Reference -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="ref" class="block text-sm font-medium text-gray-700">Reference Number</label>
+          <input type="text" id="ref" name="ref" required placeholder="Enter Reference Number"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Revenue Type -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="revenueTypeId" class="block text-sm font-medium text-gray-700">Revenue Type</label>
+          <select id="revenueTypeId" name="revenueTypeId"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option disabled>Select Revenue Type</option>
+            <% revenueTypes.forEach(type => { %>
+            <option value="<%= type.id %>"><%= type.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-2 col-span-3  sm:col-span-1">
+          <label for="desc" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="desc" name="desc" required placeholder="Enter Description"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- Image upload -->
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="image" class="block text-sm font-medium text-gray-700">Upload file</label>
+          <input type="file" id="image" name="image"
+          class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Settled -->
+        <div class="mb-2 col-span-3 sm:col-span-1 flex items-center">
+          <input type="checkbox" id="settled" name="settled" class="mr-2 px-4">
+          <label for="settled" class="block text-sm font-medium text-gray-700">Settled</label>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-span-3 flex justify-between items-center">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Submit
+          </button>
+          <button type="button" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" onclick="closeCreateModal()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- View Details Modal -->
+  <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-xl font-semibold text-blue-800 mb-4">Revenue Details</h2>
+      <div id="detailsContent" class="space-y-2">
+        <!-- Details will be dynamically added here -->
+      </div>
+      <div class="flex justify-between items-center mt-4">
+        <button onclick="printReceipt()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Generate Receipt
+        </button>
+        <button onclick="closeDetailsModal()" class="text-gray-600 hover:text-gray-800">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+
+     function openCreateModal() {
+    document.getElementById('createModal').classList.remove('hidden');
+  }
+
+  function closeCreateModal() {
+    document.getElementById('createModal').classList.add('hidden');
+  }
+
+
+    function openDetailsModal(revenue) {
+      const detailsContent = document.getElementById('detailsContent');
+      detailsContent.innerHTML = `
+        <p><strong>Transaction Date:</strong> ${new Date(revenue.transactionDate).toLocaleDateString('en-US')}</p>
+        <p><strong>Source:</strong> ${revenue.source}</p>
+        <p><strong>Type:</strong> ${revenue.revenueType}</p>
+        <p><strong>Amount:</strong> ₦${revenue.amount}</p>
+        <p><strong>Mode:</strong> ${revenue.mode}</p>
+        <p><strong>Reference:</strong> ${revenue.ref}</p>
+        <p><strong>Settled:</strong> ${revenue.settled ? 'Yes' : 'No'}</p>
+        <p><strong>Description:</strong> ${revenue.desc || 'N/A'}</p>
+      `;
+      document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    function printReceipt() {
+  const detailsContent = document.getElementById('detailsContent').innerHTML;
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+          }
+          .receipt-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .receipt-header h1 {
+            font-size: 24px;
+            color: #4A90E2;
+            margin: 0;
+          }
+          .receipt-header p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+          }
+          .receipt-logo {
+            max-width: 100px;
+            margin: 0 auto 10px;
+          }
+          .receipt-details p {
+            margin: 8px 0;
+            font-size: 16px;
+          }
+          .receipt-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt-container">
+          <div class="receipt-header">
+            <img src="/path-to-logo.png" alt="Company Logo" class="receipt-logo">
+            <h1>Transaction Receipt</h1>
+            <p>Company Name</p>
+            <p>123 Business Avenue, City, Country</p>
+            <p>Phone: +123 456 7890 | Website: www.company.com</p>
+          </div>
+          <div class="receipt-details">
+            ${detailsContent}
+          </div>
+          <div class="receipt-footer">
+            <p>Thank you for your business!</p>
+            <p>This receipt was generated electronically and is valid without a signature.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+}
+</script>
+</body>
+
+</html>

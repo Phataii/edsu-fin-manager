@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounting Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-blue-50 h-screen">
+
+  <!-- Dashboard Layout -->
+  <div class="flex h-fit">
+    <!-- Sidebar -->
+    <%- include('partials/nav', { user: user }) %>
+
+    
+    <div class="flex-1 flex flex-col">
+      <!-- Top Bar -->
+      <header class="bg-blue-100 shadow flex items-center justify-between px-6 py-4">
+        <button id="hamburger" class="lg:hidden text-blue-800" onclick="toggleSidebar()">
+          <span class="material-icons "><i class="fas fa-bars mr-2"></i></span>
+        </button>
+        <h2 class="text-xl font-semibold text-blue-800">Welcome, <%= user.firstName %> <%= user.lastName %></h2>
+        <div class="flex items-center space-x-4">
+          <input type="text" placeholder="Search..." class="px-4 py-2 rounded border-gray-300">
+          <!-- <button class="relative">
+            <span class="material-icons">notifications</span>
+            <span class="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">5</span>
+          </button> -->
+          <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full">
+        </div>
+      </header>
+      <!-- Main Dashboard -->
+      <main class="flex-1 p-6 space-y-6">
+        <!-- Widgets Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bg-white shadow p-6 rounded-lg text-blue-800">
+            <p class="text-xl font-bold">₦ 1,200,000</p>
+            <h3 class="text-sm font-semibold">Total Assets</h3>
+          </div>
+          <div class="bg-white shadow p-6 rounded-lg text-blue-800">
+            
+            <p class="text-xl font-bold">₦ <%= totalBal.toLocaleString() %></p>
+            <h3 class="text-sm font-semibold">Revenue</h3>
+            <h3 class="text-sm text-red-500 font-semibold"><%= today.toLocaleString() %></h3>
+          </div>
+          <div class="bg-white shadow p-6 rounded-lg text-blue-800">
+          
+            <p class="text-xl font-bold">₦ 45,000</p>
+            <h3 class="text-sm font-semibold">Total Expenses</h3>
+          </div>
+          <div class="bg-white shadow p-6 rounded-lg text-blue-800">
+            <h3 class="text-lg font-semibold">Total Expenses</h3>
+            <p class="text-2xl font-bold">₦ 45,000</p>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <canvas id="revenueChart" class="bg-white shadow rounded-lg p-4">
+            
+          </canvas>
+          <canvas id="expenseChart" class="bg-white shadow rounded-lg p-4"></canvas>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white shadow p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-800 mb-4">Recent Transactions</h3>
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-blue-100">
+                <th class="p-2">Date</th>
+                <th class="p-2">Description</th>
+                <th class="p-2">Category</th>
+                <th class="p-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="p-2">2024-11-01</td>
+                <td class="p-2">Office Rent</td>
+                <td class="p-2">Expenditure</td>
+                <td class="p-2 text-red-500">- $5000</td>
+              </tr>
+              <tr>
+                <td class="p-2">2024-11-02</td>
+                <td class="p-2">Event Income</td>
+                <td class="p-2">Revenue</td>
+                <td class="p-2 text-green-500">+ $2000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // document.addEventListener('DOMContentLoaded', () => {
+    //   // Revenue Chart
+    //   const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    //   new Chart(revenueCtx, {
+    //     type: 'line',
+    //     data: {
+    //       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    //       datasets: [{
+    //         label: 'Revenue',
+    //         data: [15000, 18000, 22000, 25000, 30000],
+    //         borderColor: '#2563eb',
+    //         backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    //       }, ],
+    //     },
+    //   });
+
+    //   // Expense Chart
+    //   const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+    //   new Chart(expenseCtx, {
+    //     type: 'bar',
+    //     data: {
+    //       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    //       datasets: [{
+    //         label: 'Expenditure',
+    //         data: [8000, 10000, 12000, 15000, 20000],
+    //         backgroundColor: '#ef4444',
+    //       }, ],
+    //     },
+    //   });
+    // });
+  </script>
+
+</body>
+
+</html>
