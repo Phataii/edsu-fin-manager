@@ -95,12 +95,35 @@ export default class UserServices{
           }
     }
 
+    deleteUser = async (userId: string, adminId: string) => {
+      const admin = await User.findOne({ where: { id: adminId } });
+      if (!admin) {
+        throw new NotFoundException("Admin not found");
+      }
+      if (admin.privilege !== Privilege.SuperAdmin) {
+        throw new BadRequestException("Only Admins are authorized to perform this action");
+      }
+    
+      const userRepository = dataSource.getRepository(User);
+    
+      try {
+        const user = await userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+          throw new NotFoundException("User not found");
+        }
+        await userRepository.remove(user);
+      } catch (error) {
+        // console.error("Error during user deletion:", error); // Log unexpected errors
+        throw new BadRequestException("An unexpected error occurred during deletion");
+      }
+    };
+    
     inviteUser = async(payload: InviteUser) =>{
-        const admin = User.findOne({where:{id: payload.userId}});
+        const admin = await User.findOne({where:{id: payload.userId}});
         if(!admin){
             throw new NotFoundException("User not found")
         }
-        if((await admin).privilege != (Privilege.Admin || Privilege.SuperAdmin)){
+        if(admin.privilege != Privilege.SuperAdmin){
             throw new BadRequestException("Only Admins are authorized to perform this action")
         }
 
@@ -122,7 +145,6 @@ export default class UserServices{
             message: `Account has been created for ${payload.firstName}, Kindly inform them to check their email for activation.`
         }
     }
-
     verifyAccount = async(userId: string, email: string)=>{
         const manager = User.findOne({where:{id: userId}})
         if(!manager) throw new NotFoundException("User not found");

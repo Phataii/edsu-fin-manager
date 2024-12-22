@@ -5,6 +5,7 @@ export enum Privilege {
     Admin = 2,
     Manager=3,
     Clerk = 4,
+    Reviewer = 5
   }
 
 @Entity('users')

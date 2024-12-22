@@ -30,7 +30,6 @@ export default class UserController{
       
       signIn = async (req: Request, res: Response) => {
         try {
-          // Call the sign-in service
           const result = await this.userService.signIn(req.body);
           function hasAccessToken(result: any): result is { accessToken: string; user: any } {
             return 'accessToken' in result;
@@ -57,10 +56,21 @@ export default class UserController{
               formData: req.body, // Send the original form data back
             });
           } else {
-            res.status(400).redirect(`/error?message=${encodeURIComponent(error.message)}`);
+            res.status(400).redirect(`users/auth?error=${encodeURIComponent(error.message)}`);
           }
         }
       };
+
+      deleteUser = async (req: Request, res: Response) => {
+        try {
+            const result = await this.userService.deleteUser(req.params.userId, "9ac8ea5f-9b68-4488-9568-8a2bd6d3c7cb");
+            res.redirect('/users?message=User record successfully deleted');
+        } catch (error) {
+            console.error(error); // Log the error for debugging
+            // Redirect to an error page with a custom message
+            res.status(400).redirect(`/users?error=${encodeURIComponent(error.message)}`);
+        }
+    };
 
 
       inviteUser = async (req: Request, res: Response) => {
@@ -70,7 +80,7 @@ export default class UserController{
         } catch (error) {
             console.error(error); // Log the error for debugging
             // Redirect to an error page with a custom message
-            res.status(400).redirect(`/error?message=${encodeURIComponent(error.message)}`);
+            res.status(400).redirect(`/users?error=${encodeURIComponent(error.message)}`);
         }
     };
     

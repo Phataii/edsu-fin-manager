@@ -2,6 +2,7 @@ import { Router } from "express";
 import { jwtGuard } from "../middlewares/auth-guard";
 import userRoutes from './users';
 import transactionRoutes from './transactions';
+
 const router = Router();
 
 const jwt = jwtGuard({ credentialsRequired: true }).unless({

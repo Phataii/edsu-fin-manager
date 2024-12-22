@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In / Sign Up</title>
+    <title>EDSU FIN MANAGER - auth</title>
     <script src="https://cdn.tailwindcss.com"></script>
+     <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-50">
     <div class="flex flex-col md:flex-row w-11/12 md:w-3/4 lg:w-2/3 bg-white rounded-lg shadow-5g overflow-hidden">
@@ -27,9 +29,9 @@
             <!-- Sign In Section -->
             <div id="sign-in-section">
                 <h2 class="text-2xl font-bold mb-4 text-center text-gray-600">Sign In</h2>
-                <% if (typeof error !== 'undefined') { %>
-                    <div class="error">
-                      <p class="text-red-500 text-center"><%= error %></p>
+                <% if (error) { %>
+                    <div class="border border-red-500 text-white bg-red-400 p-2 rounded-md mb-2">
+                      <%= error %>
                     </div>
                   <% } %>
                 <form action="/users/signin" method="POST">

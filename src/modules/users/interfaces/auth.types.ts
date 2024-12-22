@@ -15,5 +15,5 @@ export type SignUpBody = {
     email: string;
     firstName: string;
     lastName: string;
-    userId: string; //Admin-invitee
+    userId: string; //Admin-inviter
   }

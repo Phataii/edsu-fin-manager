@@ -27,52 +27,39 @@
     <%- include('partials/nav'); %>
     <!-- Header -->
     <main class="flex-grow-1 p-4">
-      <h1 class="mb-4 text-center">Transactions</h1>
-
       <!-- DataTable -->
       <div class="card shadow-sm">
         <div class="card-body">
           <table id="transactionsTable" class="table table-bordered table-hover">
             <thead class="table-light">
               <tr>
+                 <th>Account</th>
                 <th>Date</th>
                 <th>JV No</th>
-                <th>Payer/Payee</th>
-                <th>Description</th>
+                <!-- <th>Payer/Payee</th> -->
+                <!-- <th>Description</th> -->
                 <th>Ref No</th>
+                <!-- <th>DVEA</th>-->
+                <th>DT No</th> 
                 <th>Debit</th>
                 <th>Credit</th>
               </tr>
             </thead>
             <tbody>
               <!-- Sample Data -->
+              <% transactions.forEach(r => { %>
               <tr>
-                <td>2024-11-01</td>
-                <td>JV-001</td>
-                <td>John Doe</td>
-                <td>Office Rent</td>
-                <td>REF-123</td>
-                <td class="text-danger">-₦ 5000</td>
-                <td class="text-success">₦0</td>
+                <td> <%= r.account ? r.account.accountNumber : 'N/A' %></td>
+                <td><%= new Date(r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+                <td><%= r.jvNo %></td>
+                <!-- <td><%= r.payerOrPayee %></td> -->
+                <!-- <td><%= r.description %></td> -->
+                <td><%= r.refNo %></td>
+                <td><%= r.dtNo? r.dtNo : 'N/A' %></td>
+                <td class="text-danger">- ₦<%= r.debit.toLocaleString() %></td>
+                <td class="text-success">+ ₦<%= r.credit.toLocaleString() %></td>
               </tr>
-              <tr>
-                <td>2024-11-02</td>
-                <td>JV-002</td>
-                <td>Jane Smith</td>
-                <td>Event Income</td>
-                <td>REF-456</td>
-                <td class="text-danger">₦ 0</td>
-                <td class="text-success">+₦ 2000</td>
-              </tr>
-              <tr>
-                <td>2024-11-03</td>
-                <td>JV-003</td>
-                <td>Mark Taylor</td>
-                <td>Consultancy Fee</td>
-                <td>REF-789</td>
-                <td class="text-danger">₦ 0</td>
-                <td class="text-success">+₦ 7500</td>
-              </tr>
+              <% }); %>
               <!-- Add more rows as needed -->
             </tbody>
           </table>

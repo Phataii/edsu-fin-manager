@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  
+</head>
+<body class="bg-blue-50 h-screen">
+    <div class="flex h-fit">
+            <!-- Sidebar -->
+    <%- include('../partials/nav') %>
+        <div class="flex-1 p-6 space-y-6">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
+                <h2 class="text-2xl font-bold text-white">Revenue Details</h2>
+                <p class="text-blue-200">Detailed view of revenue information</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- JV No -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">JV No</span>
+                        <span class="text-lg font-semibold"><%= data.jvNo %></span>
+                    </div>
+                    <!-- Deposit Ticket ID -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Deposit Ticket ID</span>
+                        <span class="text-lg font-semibold"><%= data.dtid %></span>
+                    </div>
+                    <!-- Source -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Source</span>
+                        <span class="text-lg font-semibold"><%= data.source %></span>
+                    </div>
+                    <!-- Amount -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Amount</span>
+                        <span class="text-lg font-semibold">&#8358;<%= data.amount %></span>
+                    </div>
+                    <!-- Date Received -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Date Received</span>
+                        <span class="text-lg font-semibold"><%= new Date(data.dateReceived).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    </div>
+                    <!-- Transaction Date -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Transaction Date</span>
+                        <span class="text-lg font-semibold"><%= new Date(data.transactionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    </div>
+                    <!-- Payment Mode -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Payment Mode</span>
+                        <span class="text-lg font-semibold"><%= data.mode %></span>
+                    </div>
+                    <!-- Reference -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Reference</span>
+                        <span class="text-lg font-semibold"><%= data.ref %></span>
+                    </div>
+                    <!-- Description -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Description</span>
+                        <span class="text-lg font-semibold"><%= data.des %></span>
+                    </div>
+                    <!-- Settled -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Settled</span>
+                        <span class="text-lg font-semibold"><%= data.settled ? 'Yes' : 'No' %></span>
+                    </div>
+                    <!-- Created On -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Created On</span>
+                        <span class="text-lg font-semibold"><%= new Date(data.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 flex justify-end">
+                <% if (!data.settled) { %>
+                    <a href="/settle-revenue?ref=<%= data.ref %>" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600">Settle</a>
+                <% } %>
+                <button onclick="openDeleteModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 ml-2">Delete</button>
+            </div>
+        </div>
+    </div>
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+            <% if (!data.settled) { %>
+          <h2 class="text-2xl font-semibold text-blue-500 mb-6">Are you sure you want to delete this record?</h2>
+          <% } %>
+          <% if (data.settled) { %>
+            <h2 class="text-2xl font-semibold text-red-500 mb-3">This revenue has been settled.</h2>
+            <p>Deleting it will automatically delete the double entry records and all other associated records.</p>
+            <% } %>
+          <form action="/revenue/delete" method="POST" class="grid grid-cols-3 gap-6">    
+            
+            <!-- USER ID -->
+            <div class="mb-2 col-span-3 sm:col-span-1">
+              <input type="text" id="revenueId" name="revenueId" value="<%= data.id %>" hidden>
+              <input type="text" id="userId" name="userId" value="<%= user.id %>" hidden>
+            </div>
+    
+            <!-- Submit Button -->
+            <div class="col-span-3 flex justify-between items-center">
+              <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-400">
+                Continue
+              </button>
+              <button type="button" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400 text-white" onclick="closeDeleteModal()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+</body>
+</html>
+<script>
+     function openDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
+
+</script>

@@ -10,7 +10,7 @@ export class Transaction extends BaseEntity{
   @CreateDateColumn() // Automatically managed by TypeORM
   date: Date;
   
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   jvNo: string; // JV NO
 
   @Column({ type: 'varchar'})
@@ -19,7 +19,7 @@ export class Transaction extends BaseEntity{
   @Column({ type: 'text', nullable: true })
   description: string; // Optional description for the transaction
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar', unique: false })
   refNo: string; // Unique reference number for the transaction
 
   @Column({ type: 'varchar', nullable: true })
@@ -43,7 +43,7 @@ export class Transaction extends BaseEntity{
   @CreateDateColumn() // Automatically managed by TypeORM
   createdAt: Date;
 
-  @ManyToOne(() => Account, (account) => account.transaction, {
+  @ManyToOne(() => Account, (account) => account.transaction, {  // Revenue, Expense, Liability, Equity, Assets
     onDelete: 'CASCADE', // Optional: Delete transactions if the account is deleted
     onUpdate: 'CASCADE',
   })

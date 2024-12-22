@@ -1,38 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Error Page</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-md rounded-lg p-8 max-w-lg text-center">
-    <!-- Error Icon -->
-    <div class="text-red-500 mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m0-4h.01M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" />
-      </svg>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center py-10">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-4xl">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
+                <h2 class="text-2xl font-bold text-white">Revenue Details</h2>
+                <p class="text-blue-200">Detailed view of revenue information</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- JV No -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">JV No</span>
+                        <span class="text-lg font-semibold">{{ jvNo }}</span>
+                    </div>
+                    <!-- Deposit Ticket ID -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Deposit Ticket ID</span>
+                        <span class="text-lg font-semibold">{{ dtid }}</span>
+                    </div>
+                    <!-- Source -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Source</span>
+                        <span class="text-lg font-semibold">{{ source }}</span>
+                    </div>
+                    <!-- Amount -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Amount</span>
+                        <span class="text-lg font-semibold">&#8358;{{ amount }}</span>
+                    </div>
+                    <!-- Date Received -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Date Received</span>
+                        <span class="text-lg font-semibold">{{ dateReceived }}</span>
+                    </div>
+                    <!-- Transaction Date -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Transaction Date</span>
+                        <span class="text-lg font-semibold">{{ transactionDate }}</span>
+                    </div>
+                    <!-- Payment Mode -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Payment Mode</span>
+                        <span class="text-lg font-semibold">{{ mode }}</span>
+                    </div>
+                    <!-- Reference -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Reference</span>
+                        <span class="text-lg font-semibold">{{ ref }}</span>
+                    </div>
+                    <!-- Description -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Description</span>
+                        <span class="text-lg font-semibold">{{ desc }}</span>
+                    </div>
+                    <!-- Settled -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Settled</span>
+                        <span class="text-lg font-semibold">{{ settled ? 'Yes' : 'No' }}</span>
+                    </div>
+                    <!-- Created On -->
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm">Created On</span>
+                        <span class="text-lg font-semibold">{{ createdOn }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 flex justify-end">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600">Edit</button>
+                <button class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 ml-2">Delete</button>
+            </div>
+        </div>
     </div>
-
-    <!-- Error Message -->
-    <h1 class="text-2xl font-semibold text-gray-800 mb-4">Oops! Something went wrong</h1>
-    <p class="text-gray-600 mb-6">
-      We encountered an error while processing your request. Please try again or contact support if the issue persists.
-    </p>
-
-    <!-- Action Buttons -->
-    <div class="flex justify-center space-x-4">
-      <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        Go to Home
-      </a>
-      <button onclick="window.history.back()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">
-        Go Back
-      </button>
-    </div>
-  </div>
 </body>
-
 </html>

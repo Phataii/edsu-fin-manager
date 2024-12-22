@@ -23,7 +23,10 @@ export namespace PaymentMode {
 @Entity("revenue")
 export default class Revenue extends BaseEntity{
     @PrimaryGeneratedColumn("uuid") id: string;
-    @Column({unique: true}) dtid: string; //deposit ticket
+    @Column({ type: 'varchar', nullable: true })
+    jvNo: string; // JV NO
+
+    @Column({unique: true, nullable: true}) dtid: string; //deposit ticket
     @Column({nullable: true}) source: string; //UTME OR ...
     @Column({nullable: true}) amount: number;
     @Column({nullable: true}) dateReceived: Date

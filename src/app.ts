@@ -89,7 +89,8 @@ app.get('/', requireLogin, decodedAuth, async (_: Request, res: Response) => {
 
 app.get('/auth', (_: Request, res: Response) => {
  
-  res.render('users/auth.ejs');
+  const error = _.query.error || null;
+  res.render('users/auth.ejs', {error});
 });
 
 app.get('/funds', requireLogin, async (_: Request, res: Response) => {
@@ -98,12 +99,13 @@ app.get('/funds', requireLogin, async (_: Request, res: Response) => {
   res.render('funds.ejs', {vults});
 });
 
-app.get('/revenue', async (_: Request, res: Response) => {
+app.get('/revenue', requireLogin, decodedAuth, async (_: Request, res: Response) => {
   const revenueRepo = dataSource.getRepository(Revenue);
   // Fetch transactions with related account and user data
-  const revenues = await revenueRepo.find({
-    relations: ['account', 'revenueType'], // Include related entities
-  });
+  const revenues = await revenueRepo.createQueryBuilder('revenue')
+  .leftJoinAndSelect('revenue.revenueType', 'revenueType')
+  .getMany();
+ 
 
   const revenueTypeRepository = dataSource.getRepository(RevenueType);
   const revenueTypes = await revenueTypeRepository.find({ select: ['id', 'name'] });
@@ -113,9 +115,17 @@ app.get('/revenue', async (_: Request, res: Response) => {
     PaymentMode.PAYSTACK,
     PaymentMode.FLUTTERWAVE,
   ];
-  res.render('revenue/revenue.ejs', { revenues, revenueTypes, paymentModes: Object.values(paymentModes) });
+
+  const message = _.query.message || null;
+  const error = _.query.error || null;
+  res.render('revenue/revenue.ejs', { user: res.locals.userDetails, revenues, revenueTypes, paymentModes: Object.values(paymentModes), message, error });
 });
 
+app.get('/revenue/details/:id',requireLogin, decodedAuth, async (_: Request, res: Response) => {
+  const id = _.params.id
+  const data = await Revenue.findOne({where:{id}});
+  res.render('revenue/details.ejs', {data,user: res.locals.userDetails});
+});
 
 app.get('/invoice', (_: Request, res: Response) => {
   res.render('revenue/invoice.ejs');
@@ -132,18 +142,19 @@ app.get('/users',requireLogin, decodedAuth, async (_: Request, res: Response) =>
     [Privilege.Clerk]: "Clerk",
 };
   const users = await User.find();
-  res.render('users/users.ejs',{user: res.locals.userDetails, users, PrivilegeNames});
+  const message = _.query.message || null;
+  const error = _.query.error || null;
+  res.render('users/users.ejs',{user: res.locals.userDetails, users, PrivilegeNames, message, error});
 });
-app.get('/transactions', async (_: Request, res: Response) => {
+app.get('/transactions', async (req: Request, res: Response) => {
   const transactionRepository = dataSource.getRepository(Transaction);
-  
-  // Fetch transactions with related account and user data
-  const transactions = await transactionRepository.find({
-    relations: ['account', 'user'], // Include related entities
-  });
+  const transactions = await transactionRepository.createQueryBuilder('trx')
+    .leftJoinAndSelect('trx.account', 'account')
+    .getMany();
 
   res.render('transactions.ejs', { transactions });
 });
+
 
 app.get('/account/view', async (_: Request, res: Response) => {
   const accRepository = dataSource.getRepository(Account)
