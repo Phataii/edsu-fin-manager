@@ -25,16 +25,16 @@
         <button id="hamburger" class="lg:hidden text-blue-800" onclick="toggleSidebar()">
           <span class="material-icons">menu</span>
         </button>
-        <h2 class="text-xl font-semibold text-blue-800">Dashboard / Vault Accounts</h2>
+        <h2 class="text-xl font-semibold text-blue-800">Dashboard / General Funds Accounts</h2>
         <div class="flex items-center space-x-4">
-          <input type="text" placeholder="Search..." class="px-4 py-2 rounded border-gray-300">
-          <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full">
+          <!-- <input type="text" placeholder="Search..." class="px-4 py-2 rounded border-gray-300">
+          <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full"> -->
         </div>
       </header>
 
       <!-- Main Dashboard -->
       <div class="bg-white shadow-lg rounded-lg mx-auto my-6 p-8">
-        <h2 class="text-2xl font-semibold text-blue-800 mb-6">EDSU VAULT ACCOUNTS</h2>
+        <h2 class="text-2xl font-semibold text-blue-800 mb-6">EUI General Funds Account</h2>
         <% if (typeof error !== 'undefined') { %>
           <div class="error">
             <p><%= error %></p>
@@ -46,8 +46,9 @@
             <tr class="bg-blue-100">
               <th class="border px-4 py-2 text-left">Account Number</th>
               <th class="border px-4 py-2 text-left">Account Name</th>
-              <th class="border px-4 py-2 text-left">Open Bal.</th>
-              <th class="border px-4 py-2 text-left">Current Bal.</th>
+              <th class="border px-4 py-2 text-left">Opening Bal.</th>
+              <th class="border px-4 py-2 text-left">Running Bal.</th>
+              <th class="border px-4 py-2 text-left">Year</th>
               <th class="border px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
@@ -57,10 +58,11 @@
             <tr>
               <td class="border px-4 py-2"><%= vult.accountNumber %></td>
               <td class="border px-4 py-2"><%= vult.name %></td>
-              <td class="border px-4 py-2"><%= vult.openBal %></td>
-              <td class="border px-4 py-2"><%= vult.cuurentBal %></td>
+              <td class="border px-4 py-2"><%= parseFloat(vult.openBal).toLocaleString() %>.00</td>
+              <td class="border px-4 py-2"><%= parseFloat(vult.currentBal).toLocaleString() %>.00</td>
+              <td class="border px-4 py-2"><%= vult.year %></td>
               <td class="border px-4 py-2">
-                <a href="/funds/details/<%= vult.id %>" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700" >View</a>
+                <a href="/fund/<%= vult.id %>" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700" >View</a>
               </td>
             </tr>
             <% }); %>
@@ -84,9 +86,9 @@
   <!-- Create Modal -->
   <div id="createModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
     <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-      <h2 class="text-2xl font-semibold text-blue-800 mb-6">Create Vault Account</h2>
+      <h2 class="text-2xl font-semibold text-blue-800 mb-6">Create Fund Account</h2>
       <form action="/api/v1/vult/create" method="POST">
-        <!-- Revenue Amount -->
+        <!-- Account Number -->
         <div class="mb-4">
           <label for="accountNumber" class="block text-sm font-medium text-gray-700">Account Number</label>
           <input type="text" id="accountNumber" name="accountNumber" required placeholder="1234567890"
@@ -96,15 +98,29 @@
         <!-- Name -->
         <div class="mb-4">
           <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-          <input type="text" id="name" name="name" placeholder="UBA,Sterling,Cash"
+          <input type="text" id="name" name="name" required placeholder="UBA,Sterling,Cash"
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Name -->
+        <!-- Opening Bal. -->
         <div class="mb-4">
-            <label for="openBal" class="block text-sm font-medium text-gray-700">Open Balance</label>
-            <input type="text" id="openBal" name="openBal" placeholder="1000000"
+            <label for="openBal" class="block text-sm font-medium text-gray-700">Opening Balance</label>
+            <input type="number" id="openBal" name="openBal" required placeholder="1000000"
               class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Running Bal. -->
+        <div class="mb-4">
+          <label for="currentBal" class="block text-sm font-medium text-gray-700">Running Balance</label>
+          <input type="number" id="currentBal" name="currentBal" required placeholder="1000000"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+         <!-- Year -->
+         <div class="mb-4">
+          <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+          <input type="text" id="year" name="year" required placeholder="2025"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
         <!-- Submit Button -->

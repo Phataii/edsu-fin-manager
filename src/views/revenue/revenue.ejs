@@ -5,12 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Revenue Dashboard</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <!-- Font Awesome for Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Font Awesome for Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
     .dataTables_wrapper .dataTables_paginate .paginate_button {
       padding: 0.5rem 1rem;
@@ -23,7 +25,6 @@
   <div class="flex h-fit">
     <!-- Sidebar -->
     <%- include('../partials/nav') %>
-    
     <!-- Main Dashboard -->
     <main class="flex-1 p-6 space-y-6">
       <div class="flex justify-between items-center mb-4">
@@ -50,8 +51,8 @@
             <tr>
               <th>Trx Date</th>
               <th>Source</th>
-              <th>Amount</th>
-              <th>Mode</th>
+              <th>Debit</th>
+              <th>Credit</th>
               <th>Ref</th>
               <th>Settled</th>
               <th>Action</th>
@@ -65,39 +66,16 @@
                 </td>
                 <td><%= r.source %></td>
                 <!-- <td><%= r.revenueType ? r.revenueType.name : 'N/A' %></td> -->
-                <td>₦<%= r.amount %></td>
-                <td><%= r.mode %></td>
+                <td class="text-danger">₦<%= parseFloat(r.debit).toLocaleString() %>.00</td>
+                <td class="text-success"><%= parseFloat(r.credit).toLocaleString() %>.00</td>
                 <td><%= r.ref %></td>
                 <td><%= r.settled ? 'Yes' : 'No' %></td>
                 <td>
-                  <div class="inline-block text-left">
-                    <button 
-                      class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      id="dropdownButton-<%= r.id %>" 
-                      onclick="toggleDropdown('<%= r.id %>')">
-                      Actions
-                    </button>
-                    <div id="dropdownMenu-<%= r.id %>" 
-                         class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10">
-                      <ul>
-                        <li>
-                          <a href="/revenue/details/<%= r.id %>" 
-                            class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
-                           View
-                         </a>
-                        </li>
-                        <% if (!r.settled) { %>
-                        <li>
-                          <a href="/settle-revenue?ref=<%= r.ref %>" 
-                             class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
-                            Settle
-                          </a>
-                        </li>
-                        <% } %>
-                      </ul>
-                    </div>
-                  </div>
-                </td>
+                  <a href="/revenue/details/<%= r.id %>" 
+                  class="block w-full text-left px-4 py-2 btn btn-primary">
+                 View
+               </a>
+              </td>
                 
               </tr>
             <% }); %>
@@ -113,15 +91,15 @@
       <h2 class="text-2xl font-semibold text-blue-800 mb-6">Enter transaction details</h2>
       <form action="/api/v1/revenue" method="POST" class="grid grid-cols-3 gap-6">
         <!-- Deposit Ticket ID -->
-        <div class="mb-2 col-span-3 sm:col-span-1">
+        <!-- <div class="mb-2 col-span-3 sm:col-span-1">
           <label for="dtid" class="block text-sm font-medium text-gray-700">Journal Voucher No</label>
           <input type="text" id="jvNo" name="jvNo" required placeholder="Eg: JV-XX-00001"
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+        </div> -->
 
         <!-- Source -->
         <div class="mb-2 col-span-3 sm:col-span-1">
-          <label for="source" class="block text-sm font-medium text-gray-700">Source</label>
+          <label for="source" class="block text-sm font-medium text-gray-700">Payer/Payee</label>
           <input type="text" id="source" name="source" required placeholder="E.g., UTME"
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
@@ -167,16 +145,32 @@
 
         <!-- Revenue Type -->
         <div class="mb-2 col-span-3 sm:col-span-1">
-          <label for="revenueTypeId" class="block text-sm font-medium text-gray-700">Revenue Type</label>
-          <select id="revenueTypeId" name="revenueTypeId"
+          <label for="accountId" class="block text-sm font-medium text-gray-700">Debit Account</label>
+          <select id="accountId" name="accountId"
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option disabled>Select Revenue Type</option>
-            <% revenueTypes.forEach(type => { %>
-            <option value="<%= type.id %>"><%= type.name %></option>
+            <option disabled>Select Account</option>
+            <% accounts.forEach(type => { %>
+            <option value="<%= type.id %>"><%= type.accountNumber %> - <%= type.accountName %></option>
             <% }); %>
           </select>
         </div>
 
+        <div class="mb-2 col-span-3 sm:col-span-1">
+          <label for="vultAccountId" class="block text-sm font-medium text-gray-700">Credit Account</label>
+          <select id="vultAccountId" name="vultAccountId"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option disabled selected>Select Account</option>
+            <% vults.forEach(type => { %>
+            <option value="<%= type.id %>"><%= type.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <!-- Description -->
+        <div class="mb-2 col-span-3  sm:col-span-1">
+          <label for="desc" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="desc" name="desc" required placeholder="Enter Description"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
          <!-- Image upload -->
          <div class="mb-2 col-span-3 sm:col-span-1">
           <label for="image" class="block text-sm font-medium text-gray-700">Upload file</label>
@@ -184,15 +178,6 @@
           class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Description -->
-        <div class="mb-2 col-span-3  sm:col-span-1">
-          <label for="desc" class="block text-sm font-medium text-gray-700">Description</label>
-          <textarea id="desc" name="desc" required placeholder="Enter Description"
-            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-        </div>
-
-       
-        
         <!-- USER ID -->
         <div class="mb-2 col-span-3 sm:col-span-1">
           <!-- <label for="userId" class="block text-sm font-medium text-gray-700">User ID</label> -->
@@ -200,6 +185,7 @@
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
+        <p class="text-danger">NB: Selecting an account to credit automatically settles the transaction.</p>
         <!-- Submit Button -->
         <div class="col-span-3 flex justify-between items-center">
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -231,15 +217,15 @@
   </div>
 
   <script>
-function toggleDropdown(id) {
-  const menu = document.getElementById(`dropdownMenu-${id}`);
-  menu.classList.toggle('hidden');
-  document.addEventListener('click', (event) => {
-    if (!event.target.closest(`#dropdownButton-${id}`)) {
-      menu.classList.add('hidden');
-    }
-  });
-}
+// function toggleDropdown(id) {
+//   const menu = document.getElementById(`dropdownMenu-${id}`);
+//   menu.classList.toggle('hidden');
+//   document.addEventListener('click', (event) => {
+//     if (!event.target.closest(`#dropdownButton-${id}`)) {
+//       menu.classList.add('hidden');
+//     }
+//   });
+// }
      function openCreateModal() {
     document.getElementById('createModal').classList.remove('hidden');
   }

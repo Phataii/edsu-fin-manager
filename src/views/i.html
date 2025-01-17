@@ -1,82 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revenue Details</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitation Email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #0056b3;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #0056b3;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #004494;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center py-10">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-4xl">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
-                <h2 class="text-2xl font-bold text-white">Revenue Details</h2>
-                <p class="text-blue-200">Detailed view of revenue information</p>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- JV No -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">JV No</span>
-                        <span class="text-lg font-semibold">{{ jvNo }}</span>
-                    </div>
-                    <!-- Deposit Ticket ID -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Deposit Ticket ID</span>
-                        <span class="text-lg font-semibold">{{ dtid }}</span>
-                    </div>
-                    <!-- Source -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Source</span>
-                        <span class="text-lg font-semibold">{{ source }}</span>
-                    </div>
-                    <!-- Amount -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Amount</span>
-                        <span class="text-lg font-semibold">&#8358;{{ amount }}</span>
-                    </div>
-                    <!-- Date Received -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Date Received</span>
-                        <span class="text-lg font-semibold">{{ dateReceived }}</span>
-                    </div>
-                    <!-- Transaction Date -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Transaction Date</span>
-                        <span class="text-lg font-semibold">{{ transactionDate }}</span>
-                    </div>
-                    <!-- Payment Mode -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Payment Mode</span>
-                        <span class="text-lg font-semibold">{{ mode }}</span>
-                    </div>
-                    <!-- Reference -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Reference</span>
-                        <span class="text-lg font-semibold">{{ ref }}</span>
-                    </div>
-                    <!-- Description -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Description</span>
-                        <span class="text-lg font-semibold">{{ desc }}</span>
-                    </div>
-                    <!-- Settled -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Settled</span>
-                        <span class="text-lg font-semibold">{{ settled ? 'Yes' : 'No' }}</span>
-                    </div>
-                    <!-- Created On -->
-                    <div class="flex flex-col">
-                        <span class="text-gray-500 text-sm">Created On</span>
-                        <span class="text-lg font-semibold">{{ createdOn }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 bg-gray-50 flex justify-end">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600">Edit</button>
-                <button class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 ml-2">Delete</button>
-            </div>
-        </div>
+<body>
+  <div class="email-container">
+    <h1>Welcome to Our Application!</h1>
+    <p>Dear  {email},</p>
+    <p>You have been invited to join our application. Below are your login credentials:</p>
+    <ul>
+      <li><strong>Email:</strong> {email},</li>
+      <li><strong>Password:</strong> {dummypword},</li>
+    </ul>
+    <p>We strongly recommend that you log in and change your password immediately for security purposes.</p>
+    <a href="/login" class="btn">Login to Your Account</a>
+    <p>If you have any questions or need assistance, please don't hesitate to reach out.</p>
+    <p>Thank you,</p>
+    <p>The <strong>Application Team</strong></p>
+    <div class="footer">
+      <p>Please do not share your password with anyone. If you received this email in error, please contact us immediately.</p>
     </div>
+  </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

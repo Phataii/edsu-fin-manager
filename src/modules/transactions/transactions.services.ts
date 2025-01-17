@@ -3,12 +3,13 @@ import Account from "../../entities/account.entity";
 import DVEA from "../../entities/dvea.entity";
 import Revenue, { PaymentMode } from "../../entities/revenue.entity";
 import VultAccount from "../../entities/vult-account.entity";
-import { addRevenue, createAccount, createRT, createVult } from "./interfaces/transactions.types";
+import { createAccount, createRT, createVult, ExpenditureDTO } from "./interfaces/transactions.types";
 import { Transaction } from "../../entities/transactions.entity";
-import RevenueType from "../../entities/revenue-types.entity";
 import dataSource from "../../datasource/data-source";
 import { Privilege, User } from "../../entities/user.entity";
 import { BadRequestException, NotFoundException } from "../../utils/service-exceptions";
+import { MoreThan } from "typeorm";
+import Expenditure from "../../entities/expenditure.entity";
 
 
 export default class TransactionServices{
@@ -25,20 +26,21 @@ export default class TransactionServices{
     }
 
     createAcc = async(payload: createAccount)=>{
-        const acc = Account.create({
-            accountNumber: payload.accountNumber,
-            accountType: payload.accountType
-          });
+      const acc = Account.create({
+          accountNumber: payload.accountNumber,
+          accountType: payload.accountType,
+          accountName: payload.accountName
+        });
 
-          // Save the user to the database
-          await acc.save();
+        // Save the acc to the database
+        await acc.save();
     return acc
     }
 
     // create revenue type
     createRT = async(payload: createRT)=>{
-        const acc = RevenueType.create({
-            name: payload.name,
+        const acc = Revenue.create({
+            // name: payload.name,
             vultAccountId: payload.vultAccountId,
           });
 
@@ -49,132 +51,140 @@ export default class TransactionServices{
 
     addRevenueTransaction = async (payload) => {
         try {
-          const revenueAccount = await Account.findOne({ where: { accountNumber: "01-001-100" } }); // Revenue account
+          
+          const jvNo = await this.generateJVSerialNumber();
+          const dtNo = await this.generateDTSerialNumber();
+
           // Create and save the revenue
           const revenue = Revenue.create({
-            account: revenueAccount,
-            jvNo: payload.jvNo,
-            // dtid: payload.dtid, Update when trx is reconciled
-            source: payload.source,
-            amount: payload.amount,
-            transactionDate: payload.transactionDate,
             mode: payload.mode,
-            desc: payload.desc,
             ref: payload.ref,
-            revenueTypeId: payload.revenueTypeId,
-            // settled: true,
+            debit: payload.amount,
+            credit: 0,
+            desc: payload.desc,
+            jvNo,
+            source: payload.source,
+            transactionDate: payload.transactionDate,
+            accountId: payload.accountId, // DR account
+            userId: payload.userId, // Save the logged-in user
             createdOn: new Date(),
-            dateReceived: new Date(),
-            userId: payload.userId // Save the logged-in user
           });
-       
-          const savedRevenue = await revenue.save();
+          // if user selects CR account while posting
+          if(payload.vultAccountId != null || payload.vultAccountId != undefined){
+            
+            revenue.vultAccountId = payload.vultAccountId, // CR account
+            revenue.settled = true,
+            revenue.dtNo = dtNo
+            revenue.dateReceived = new Date();
 
-          await this.processTransaction(savedRevenue);
-
-          // If revenue is settled, process the transaction and apply double entry
-          // if (savedRevenue.settled) {
-          //   await this.processTransaction(savedRevenue);
-          // }
-      
-          return savedRevenue;
+            const creditTransaction = Revenue.create({
+              accountId: revenue.accountId,
+              vultAccountId: revenue.vultAccountId,
+              jvNo: revenue.jvNo, 
+              source: revenue.source,
+              desc: revenue.desc,
+              ref: revenue.ref,
+              dveaNo: revenue.dveaNo,
+              mode: revenue.mode,
+              settled: true,
+              debit: 0, // Explicitly set to zero
+              credit: revenue.debit,
+              dtNo,
+              createdOn: new Date(),
+              dateReceived: new Date(),
+              userId: revenue.userId,
+              transactionDate: revenue.transactionDate
+            })
+            await creditTransaction.save();
+            await this.addRevenueToCrAcc(creditTransaction);
+          }
+         
+          await revenue.save();
+          return {message: "Revenue saved"};
         } catch (error) {
           console.error("Error in addRevenueTransaction:", error);
           throw error;
         }
       };
-      
-      processTransaction = async (savedRevenue) => {
+
+      settleRevenueTrx = async (data) => {
         try {
-            // Fetch the accounts
-            const assetAccount = await Account.findOne({ where: { accountNumber: "03-001-100" } }); // Asset account
-            const revenueAccount = await Account.findOne({ where: { accountNumber: "01-001-100" } }); // Revenue account
-            
-            if (!assetAccount || !revenueAccount) {
-                throw new Error('Required accounts not found');
-            }
-    
-            const dtNo = await this.generateDTSerialNumber();
-            // Create and save the credit transaction (revenue)
-            const creditTransaction = Transaction.create({
-              account: revenueAccount,
-              jvNo: savedRevenue.jvNo, // Define a format for JV number if needed
-              payerOrPayee: savedRevenue.source,
-              description: savedRevenue.desc,
-              refNo: savedRevenue.ref,
-              dveaNo: savedRevenue.revenueTypeId,
-              // settled: savedRevenue.settled,
-              debit: 0, // Explicitly set to zero
-              credit: savedRevenue.amount,
-              // dtNo,
-              createdAt: new Date(),
-              userId: savedRevenue.userId,
-              date: savedRevenue.transactionDate
-          });
+           // Find the revenue record by reference
+           const revenue = await Revenue.findOne({ where: { ref: data.ref, debit: MoreThan(0) } });
+           if (!revenue) {
+             throw new Error(`Revenue record not found for reference: ${data.ref}`);
+           }
 
-        await creditTransaction.save();
-
-            // Create and save the debit transaction (asset)
-            const debitTransaction = Transaction.create({
-                account: assetAccount,
-                jvNo: savedRevenue.jvNo, // Define a format for JV number if needed
-                payerOrPayee: savedRevenue.source,
-                description: savedRevenue.desc,
-                refNo: savedRevenue.ref,
-                dveaNo: savedRevenue.revenueTypeId,
-                // settled: savedRevenue.settled,
-                debit: savedRevenue.amount,
-                credit: 0, // Explicitly set to zero
-                // dtNo,
-                createdAt: new Date(),
-                userId: savedRevenue.userId,
-                date: savedRevenue.transactionDate
-            });
-    
-            await debitTransaction.save();
-    
-            console.log('Double entry successfully created.');
+           // Generate a new DT serial number
+          const dtNo = await this.generateDTSerialNumber();
+          const creditTransaction = Revenue.create({
+            accountId: revenue.accountId,
+            vultAccountId: data.creditAccount,
+            jvNo: revenue.jvNo, 
+            source: revenue.source,
+            desc: revenue.desc,
+            mode: revenue.mode,
+            ref: revenue.ref,
+            dveaNo: revenue.dveaNo,
+            settled: true,
+            debit: 0, // Explicitly set to zero
+            credit: revenue.debit,
+            dtNo,
+            createdOn: new Date(),
+            userId: revenue.userId,
+            transactionDate: revenue.transactionDate
+          })
+          
+          await creditTransaction.save();
+         
+          // Update revenue record
+          revenue.dtNo = dtNo;
+          revenue.settled = true;
+          revenue.vultAccountId = data.creditAccount
+          await revenue.save();
+      
+          // do the vult calculation thing
+          await this.addRevenueToCrAcc(creditTransaction);
+      
+          return `Successfully settled revenue and transactions for reference: ${data.ref}`;
         } catch (error) {
-            console.error("Error in processTransaction:", error);
-            throw error;
+          return `Error settling revenue and transactions: ${error.message}`;
         }
-    };
-    
-    settleRevenueTrx = async (ref) => {
+      };
+
+    // sum the incoming revenue into CR account
+    addRevenueToCrAcc = async (data) => {
       try {
-        console.log(">>>>>>>>>", ref)
-        // Find the revenue record by reference
-        const revenue = await Revenue.findOne({ where: { ref } });
-        if (!revenue) {
-          throw new Error(`Revenue record not found for reference: ${ref}`);
+        // Ensure data.credit is a valid number
+        const creditAmount = parseFloat(data.credit);
+        if (isNaN(creditAmount)) {
+          throw new Error(`Invalid credit amount: ${data.credit}`);
         }
     
-        // Generate a new DT serial number
-        const dtSerialNumber = await this.generateDTSerialNumber();
-    
-        // Update revenue record
-        revenue.dtid = dtSerialNumber;
-        revenue.settled = true;
-        await revenue.save();
-    
-        // Find all transactions related to the reference
-        const transactions = await Transaction.find({ where: { refNo: ref } });
-        if (transactions.length > 0) {
-          // Update all transactions in a batch
-          await Promise.all(
-            transactions.map(async (transaction) => {
-              transaction.dtNo = dtSerialNumber; // Use the same DT serial number
-              transaction.settled = true;
-              await transaction.save();
-            })
-          );
+        // Fetch the account
+        const account = await VultAccount.findOne({ where: { id: data.vultAccountId } });
+        if (!account) {
+          throw new NotFoundException(`Account not found`);
         }
     
-        return `Successfully settled revenue and transactions for reference: ${ref}`;
-      } catch (error) {
-        return `Error settling revenue and transactions: ${error.message}`;
+        // Convert account.currentBal to a number
+        const currentBalance = parseFloat(account.currentBal as any); // Ensure it's treated as a number
+    
+        // Perform the addition
+        const newBalance = currentBalance + creditAmount;
+        account.currentBal = newBalance;
+    
+        // Save the updated account
+        await account.save();
+        
+      } catch (e) {
+        console.error("Error in addRevenueToCrAcc:", e.message || e);
+        throw e;
       }
     };
+    
+    
+   
     
     deleteRevenue = async (revenueId: string,userId: string) => {
           const admin = await User.findOne({ where: { id: userId } });
@@ -199,43 +209,65 @@ export default class TransactionServices{
           }
         };
         
-    applyDoubleEntry = async (revenue) => {
-        try {
-          // Find the associated revenue type account
-          const revenueTypeAccount = await RevenueType.findOne({ where: { id: revenue.revenueTypeId } });
-          if (!revenueTypeAccount) {
-            throw new Error("Revenue type account not found");
+
+        submitExpenditure = async (payload: ExpenditureDTO): Promise<{ message: string; data?: Expenditure; error?: string }> => {
+          try {
+            console.log("Payload received:", payload);
+        
+            // Validate payload fields
+            if (!payload.pvNo || !payload.payee || !payload.address || !payload.total || !payload.accounts.length) {
+              throw new Error("Missing required fields in the payload.");
+            }
+        
+            // Ensure all accounts have valid data
+            const formattedAccounts = payload.accounts.map((account, index) => {
+              if (!account.desc || !account.accountCode || !account.amount || !account.ref) {
+                throw new Error(`Invalid account details at index ${index}. All fields are required.`);
+              }
+        
+              return {
+                desc: account.desc,
+                accountCode: account.accountCode,
+                amount: parseFloat(account.amount as unknown as string), // Ensure amount is a valid number
+                ref: account.ref,
+              };
+            });
+        
+            // Create a new expenditure instance
+            const expenditure = Expenditure.create({
+              pvNo: payload.pvNo,
+              payee: payload.payee,
+              address: payload.address,
+              cheqOrMandateNo: payload.cheqOrMandateNo || null,
+              total: payload.total,
+              accounts: formattedAccounts,
+              vultAccountId: payload.vultAccountId || null,
+              dateOfBill: new Date(payload.DateOfBill), // Convert date to Date object
+            });
+        
+            // Save the expenditure to the database
+            await expenditure.save();
+        
+            // Return success response
+            return {
+              message: "Expenditure saved successfully.",
+              data: expenditure,
+            };
+          } catch (error) {
+            console.error("Error saving expenditure:", error);
+        
+            // Return error response
+            return {
+              message: "An error occurred while saving the expenditure.",
+              error: error instanceof Error ? error.message : "Unknown error",
+            };
           }
-      
-          // Credit the revenue type account
-          revenueTypeAccount.amount += revenue.amount;
-          await revenueTypeAccount.save();
-      
-          // Debit the revenue type account
-          revenueTypeAccount.amount -= revenue.amount;
-          await revenueTypeAccount.save();
-      
-          // Find the associated vault account
-          const vaultAccount = await VultAccount.findOne({ where: { id: revenueTypeAccount.vultAccountId } });
-          if (!vaultAccount) {
-            throw new Error("Vault account not found");
-          }
-      
-          // Credit the vault account
-          vaultAccount.currentBal += revenue.amount;
-          await vaultAccount.save();
-        } catch (error) {
-          console.error("Error in applyDoubleEntry:", error);
-          throw error;
-        }
-      };  
-
-
-
+        };
+        
       generateDTSerialNumber = async (): Promise<string> => {
         try {
            // Retrieve the latest serial number from the database
-           const transactionRepository = dataSource.getRepository(Transaction);
+           const transactionRepository = dataSource.getRepository(Revenue);
             const latestEntry = await transactionRepository.createQueryBuilder('trx')
                 .select('trx.dtNo') // Ensure the column name matches your database
                 .orderBy('trx.dtNo', 'DESC')
@@ -261,23 +293,23 @@ export default class TransactionServices{
     generateJVSerialNumber = async (): Promise<string> => {
       try {
          // Retrieve the latest serial number from the database
-         const transactionRepository = dataSource.getRepository(Transaction);
+         const transactionRepository = dataSource.getRepository(Revenue);
           const latestEntry = await transactionRepository.createQueryBuilder('trx')
-              .select('trx.dtNo') // Ensure the column name matches your database
-              .orderBy('trx.dtNo', 'DESC')
+              .select('trx.jvNo') // Ensure the column name matches your database
+              .orderBy('trx.jvNo', 'DESC')
               .getOne();
   
           let nextNumber = 1; // Default to 1 if no serial number exists
   
-          if (latestEntry?.dtNo) {
+          if (latestEntry?.jvNo) {
               // Extract the numeric part from the latest serial number (e.g., "DT-000000001" -> 1)
-              const numericPart = parseInt(latestEntry.dtNo.replace('DT-', ''), 10);
+              const numericPart = parseInt(latestEntry.jvNo.replace('JV-', ''), 10);
               nextNumber = numericPart + 1;
           }
   
           // Format the next serial number with leading zeros
           const paddedNumber = nextNumber.toString().padStart(9, '0'); // 9 digits with leading zeros
-          return `DT-${paddedNumber}`;
+          return `JV-${paddedNumber}`;
       } catch (error) {
           console.error('Error generating serial number:', error);
           throw error;

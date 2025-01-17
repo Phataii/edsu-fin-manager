@@ -64,9 +64,46 @@
                 <td><%= u.email %></td>
                 <td><%= PrivilegeNames[u.privilege] %></td>
                 <td><%= u.createdOn.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></td>
-                <td><a href="/users/delete?userId=<%= u.id %>" class="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700">
+                <!-- <td><a href="/users/delete/<%= u.id %>/<%= user.id %>" class="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700">
                     Delete
-                  </a></td>
+                  </a></td> -->
+                  <td>
+                    <div class="inline-block text-left">
+                      <button 
+                        class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        id="dropdownButton-<%= u.id %>" 
+                        onclick="toggleDropdown('<%= u.id %>')">
+                        Actions
+                      </button>
+                      <div id="dropdownMenu-<%= u.id %>" 
+                           class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10">
+                        <ul>
+                          <li>
+                            <a href="mailto:<%= u.email %>?subject=INVITATION TO EDSU FIN. MANAGER&body=This%20is%20the%20body%20of%20the%20email"
+                              target="_blank" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                              Send Invite Email
+                              </a>
+                            <!-- <a href="/revenue/details/<%= u.id %>" 
+                              class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                             
+                           </a> -->
+                          </li>
+                          <li>
+                            <a href="/users/delete/<%= u.id %>/<%= user.id %>" 
+                               class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                              Modify Role
+                            </a>
+                          </li>
+                          <li>
+                            <a href="/users/delete/<%= u.id %>/<%= user.id %>" 
+                               class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                              Delete
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </td>
               </tr>
               <%}) %>
               <!-- Add more rows as needed -->
@@ -113,7 +150,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
-
+function toggleDropdown(id) {
+  const menu = document.getElementById(`dropdownMenu-${id}`);
+  menu.classList.toggle('hidden');
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest(`#dropdownButton-${id}`)) {
+      menu.classList.add('hidden');
+    }
+  });
+}
       function openCreateModal() {
     document.getElementById('createModal').classList.remove('hidden');
   }

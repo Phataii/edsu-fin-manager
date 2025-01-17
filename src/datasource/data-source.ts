@@ -10,7 +10,7 @@ import { Transaction } from "../entities/transactions.entity";
 import DVEA from "../entities/dvea.entity";
 import VultAccount from "../entities/vult-account.entity";
 import Revenue from "../entities/revenue.entity";
-import RevenueType from "../entities/revenue-types.entity";
+import Expenditure from "../entities/expenditure.entity";
 
 export default new DataSource({
     type: "mysql",
@@ -30,8 +30,8 @@ export default new DataSource({
         Transaction,
         DVEA,
         Revenue,
-        RevenueType,
-        VultAccount
+        VultAccount,
+        Expenditure
     ],
     subscribers: [],
     migrations: [path.resolve(__dirname, "../migrations/**/*.ts")],

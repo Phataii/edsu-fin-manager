@@ -26,7 +26,7 @@ export default class EmailService {
       from: template.from,
       to: to,
       subject: template.subject,
-      text: template.body,
+      text: template.template,
       // html: '<h1>Testing some Mailgun awesomeness!</h1>',
     })
       .then((msg) => console.log(msg)) // Logs response data
@@ -34,6 +34,7 @@ export default class EmailService {
   };
 
   sendUserInvite = async (to: string,dummypword:string) => {
+
     const mailgun = new Mailgun(FormData);
     // Initialize the mailgun client with API key and username
     const mg = mailgun.client({
@@ -46,8 +47,14 @@ export default class EmailService {
     if (!template) {
       throw new BadRequestException("Something went wrong while sending the email")
     }
-
-    const html = ejs.render(template.body.replace('{dummypword}', dummypword));
+   
+    
+    const html = ejs.render(
+      template.template
+        .replace('{email}', to)
+        .replace('{dummypword}', dummypword)
+    );
+    console.log(">>>??????>>>", html)
     mg.messages.create('sandbox20b7407ae3534b28b73c3d6d8efc29e3.mailgun.org', {
       from: template.from,
       to: to,
@@ -59,6 +66,23 @@ export default class EmailService {
       .catch((err) => console.error(err)); // Logs any error
   };
 
+
+
+  openMailTo= async()=> {
+    const email = 'example@example.com';
+    const subject = 'Hello';
+    const body = 'This is the body of the email, defined after the function is completed.';
+    
+    // Encode the body to ensure it is properly formatted in the mailto link
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  
+    // Trigger the mailto link
+    window.location.href = mailtoLink;
+  }
+  
+  
+
+  
 //   sendConfirmationEmail = async (to: string, name: string, userId: Types.ObjectId) => {
 //     const mailgun = new Mailgun(FormData);
 //     // Initialize the mailgun client with API key and username
@@ -137,7 +161,4 @@ export default class EmailService {
 //       .catch((err) => console.error(err)); // Logs any error
 //   };
 }
-
-
-
 

@@ -4,7 +4,7 @@ import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } 
 export default class EmailTemplate extends BaseEntity{
     @PrimaryGeneratedColumn("uuid") id: string;
     @Column({ default: null }) type: string;
-    @Column({ default: null }) body: string;
+    @Column('longtext') template: string;
     @Column({ default: null }) subject: string;
     @Column({ default: null }) from: string;
     @CreateDateColumn({ default: null })createdAt: Date;

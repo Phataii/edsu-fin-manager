@@ -6,6 +6,7 @@ import Revenue from "./revenue.entity";
 export default class Account extends BaseEntity{
     @PrimaryGeneratedColumn("uuid") id: string;
     @Column() accountNumber: string;
+    @Column() accountName: string;
     @Column() accountType: string;
     @OneToMany(() => Transaction, (transaction) => transaction.account)
     transaction: Transaction[]; // Defines the relationship

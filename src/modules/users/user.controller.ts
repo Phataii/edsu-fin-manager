@@ -56,31 +56,35 @@ export default class UserController{
               formData: req.body, // Send the original form data back
             });
           } else {
-            res.status(400).redirect(`users/auth?error=${encodeURIComponent(error.message)}`);
+            req.session.error = `${error.message}`;
+            res.redirect('/users');
           }
         }
       };
 
       deleteUser = async (req: Request, res: Response) => {
         try {
-            const result = await this.userService.deleteUser(req.params.userId, "9ac8ea5f-9b68-4488-9568-8a2bd6d3c7cb");
-            res.redirect('/users?message=User record successfully deleted');
+          const result = await this.userService.deleteUser(req.params.uId, req.params.aId);
+          req.session.message = 'User record successfully deleted';
+          res.redirect('/users');
         } catch (error) {
-            console.error(error); // Log the error for debugging
-            // Redirect to an error page with a custom message
-            res.status(400).redirect(`/users?error=${encodeURIComponent(error.message)}`);
+          req.session.error = 'An error occurred while deleting the user';
+          res.redirect('/users');
         }
-    };
+      };
+      
 
 
       inviteUser = async (req: Request, res: Response) => {
         try {
             const result = await this.userService.inviteUser(req.body);
-            res.status(200).json(result);
+            req.session.message = `${result}`;
+            res.redirect('/users');
         } catch (error) {
-            console.error(error); // Log the error for debugging
             // Redirect to an error page with a custom message
-            res.status(400).redirect(`/users?error=${encodeURIComponent(error.message)}`);
+            req.session.error = `${error.message}`;
+            res.redirect('/users');
+            // res.status(400).redirect(`/users?error=${encodeURIComponent(error.message)}`);
         }
     };
     

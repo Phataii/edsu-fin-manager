@@ -43,13 +43,8 @@ export class Transaction extends BaseEntity{
   @CreateDateColumn() // Automatically managed by TypeORM
   createdAt: Date;
 
-  @ManyToOne(() => Account, (account) => account.transaction, {  // Revenue, Expense, Liability, Equity, Assets
-    onDelete: 'CASCADE', // Optional: Delete transactions if the account is deleted
-    onUpdate: 'CASCADE',
-  })
-  @Index()
-  account: Account; // Foreign key linking to the Account
-
+ @Column({ nullable: true }) accountId: string;
+  @ManyToOne(() => Account) account: Account;
   //The person that entered the payment
   @Column({ nullable: false }) userId: string;
   @ManyToOne(() => User) user: User;

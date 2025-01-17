@@ -10,6 +10,6 @@ const jwt = jwtGuard({ credentialsRequired: true });
 router.post('/users/signup', vA.signUp, controller.signUp)
 router.post('/users/signin',  controller.signIn)
 router.post('/users/invite', jwt, controller.inviteUser)
-router.get('/users/delete', jwt, controller.deleteUser)
+router.get('/users/delete/:uId/:aId', jwt, controller.deleteUser)
 
 export default router;

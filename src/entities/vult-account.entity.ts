@@ -9,5 +9,6 @@ export default class VultAccount extends BaseEntity{
     openBal: number; // Credit amount
     @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
     currentBal: number; // Credit amount
+    @Column({default: null}) year: string;
     @CreateDateColumn() openBalDate: Date;
 }

@@ -95,8 +95,8 @@ export default class UserServices{
           }
     }
 
-    deleteUser = async (userId: string, adminId: string) => {
-      const admin = await User.findOne({ where: { id: adminId } });
+    deleteUser = async (uId: string, aId: string) => {
+      const admin = await User.findOne({ where: { id: aId } });
       if (!admin) {
         throw new NotFoundException("Admin not found");
       }
@@ -107,10 +107,11 @@ export default class UserServices{
       const userRepository = dataSource.getRepository(User);
     
       try {
-        const user = await userRepository.findOne({ where: { id: userId } });
+        const user = await userRepository.findOne({ where: { id: uId } });
         if (!user) {
           throw new NotFoundException("User not found");
         }
+        
         await userRepository.remove(user);
       } catch (error) {
         // console.error("Error during user deletion:", error); // Log unexpected errors
@@ -140,10 +141,9 @@ export default class UserServices{
             password: hashedPassword,
             privilege: Privilege.Clerk
           }).save();
-        await this.emailService.sendUserInvite(payload.email, dummypword);
-        return{
-            message: `Account has been created for ${payload.firstName}, Kindly inform them to check their email for activation.`
-        }
+        // await this.emailService.openMailTo();
+        return `Account has been created for ${payload.firstName}, Kindly inform them to check their email for activation.`
+        
     }
     verifyAccount = async(userId: string, email: string)=>{
         const manager = User.findOne({where:{id: userId}})

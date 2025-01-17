@@ -5,8 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Accounting Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
   <!-- Font Awesome for icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
@@ -26,31 +29,38 @@
           <span class="material-icons">menu</span>
         </button>
         <h2 class="text-xl font-semibold text-blue-800">Dashboard / Accounts</h2>
-        <div class="flex items-center space-x-4">
-          <input type="text" placeholder="Search..." class="px-4 py-2 rounded border-gray-300">
-          <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full">
-        </div>
+        <% if (message) { %>
+          <div class="bg-green-400 text-lg p-2 rounded-md text-white">
+            <%= message %>
+          </div>
+        <% } %>
       </header>
 
       <!-- Main Dashboard -->
+      <button class="bg-blue-600 text-white mx-auto px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none mt-6" onclick="openCreateModal()">
+        Create New Account
+      </button>
       <div class="bg-white shadow-lg rounded-lg mx-auto my-6 p-8">
-        <h2 class="text-2xl font-semibold text-blue-800 mb-6">Accounts</h2>
+       
+        <!-- <h2 class="text-2xl font-semibold text-blue-800 mb-6">Accounts</h2> -->
 
         <!-- Table to display accounts -->
-        <table class="w-full border-collapse">
-          <thead>
+        <table id="transactionsTable" class="table table-bordered table-hover">
+          <thead class="table-light">
             <tr class="bg-blue-100">
-              <th class="border px-4 py-2 text-left">Account Number</th>
-              <th class="border px-4 py-2 text-left">Name</th>
-              <th class="border px-4 py-2 text-left">Actions</th>
+              <th>Account Number</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <!-- Example data row -->
             <% accounts.forEach(acc=> { %>
             <tr>
-              <td class="border px-4 py-2"><%= acc.accountNumber %></td>
-              <td class="border px-4 py-2"><%= acc.accountType %></td>
+              <td><%= acc.accountNumber %></td>
+              <td><%= acc.accountName %></td>
+              <td><%= acc.accountType %></td>
               <td class="border px-4 py-2">
                 <button class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700" onclick="openEditModal('01-001-100', 'Revenue', 'Description example')">
                   Edit
@@ -61,15 +71,6 @@
             <!-- Add more rows as needed -->
           </tbody>
         </table>
-
-        <!-- Buttons -->
-        <div class="mt-4 flex justify-between">
-          <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none" id="downloadCsvBtn">
-            Download CSV
-          </button>
-          <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 focus:outline-none" onclick="openCreateModal()">
-            Create New Account
-          </button>
         </div>
       </div>
     </div>
@@ -80,23 +81,30 @@
     <div class="bg-white p-8 rounded-lg shadow-lg w-96">
       <h2 class="text-2xl font-semibold text-blue-800 mb-6">Create Account</h2>
       <form action="/api/v1/vult/account" method="POST">
-        <!-- Revenue Amount -->
+        <!-- Account Number -->
         <div class="mb-4">
           <label for="accountNumber" class="block text-sm font-medium text-gray-700">Account Number</label>
           <input type="text" id="accountNumber" name="accountNumber" required placeholder="01-001-100"
             class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Name -->
+         <!-- Name -->
+         <div class="mb-4">
+          <label for="accountName" class="block text-sm font-medium text-gray-700">Account Name</label>
+          <input type="text" id="accountName" name="accountName" required placeholder="Subvention Income"
+            class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Type -->
         <div class="mb-4">
-          <label for="accountType" class="block text-sm font-medium text-gray-700">Name</label>
+          <label for="accountType" class="block text-sm font-medium text-gray-700">Account Type</label>
           <select id="accountType" name="accountType" class="mt-2 px-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>Select</option>
-            <option>Assets</option>
-            <option>Equity</option>
-            <option>Expenditure</option>
-            <option>Liability</option>
-            <option>Revenue</option>
+            <option disabled>Select Account Type</option>
+            <option value="Revenue">Revenue</option>
+            <option value="Expenditure">Expenditure</option>
+            <option value="Assets">Assets</option>
+            <option value="Liability">Liability</option>
+            <option value="Equity">Equity</option>
           </select>
           
         </div>
@@ -167,13 +175,46 @@
     function closeEditModal() {
       document.getElementById('editModal').classList.add('hidden');
     }
-
-    document.getElementById('downloadCsvBtn').addEventListener('click', function() {
-      // Add your CSV download logic here
-      alert('Download CSV functionality not yet implemented.');
-    });
-    
   </script>
+
+
+
+ <!-- Bootstrap JS -->
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+ <!-- jQuery -->
+ <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+ <!-- DataTables JS -->
+ <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+ <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+ <!-- DataTables Buttons for CSV Export -->
+ <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+ <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+ <script>
+   $(document).ready(function () {
+     $('#transactionsTable').DataTable({
+       responsive: true,
+       dom: 'Bfrtip', // Adds export buttons
+       buttons: [
+         {
+           extend: 'csvHtml5',
+           className: 'btn btn-primary mb-3',
+           text: '<i class="fas fa-download"></i> Download CSV'
+         }
+       ],
+       language: {
+         search: "Filter Records:",
+         lengthMenu: "Show _MENU_ entries per page",
+         info: "Showing _START_ to _END_ of _TOTAL_ transactions",
+         paginate: {
+           previous: "<",
+           next: ">"
+         }
+       }
+     });
+   });
+ </script>
 </body>
 
 </html>

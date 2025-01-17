@@ -30,10 +30,11 @@ export default class TransactionsController{
       createAcc = async (req: Request, res: Response) => {
         try {
           const result = await this.transactionService.createAcc(req.body);
-          res.redirect('/account/view');
+          req.session.message = 'Account created';
+          res.redirect('/accounts');
         } catch (error) {
           if (error instanceof BadRequestException) {
-            res.render('funds', {
+            res.render('accounts', {
               error: error.message,
               formData: req.body // Send the original form data back
             });
@@ -64,7 +65,8 @@ export default class TransactionsController{
       addRevenue = async (req: Request, res: Response) => {
         try {
           const result = await this.transactionService.addRevenueTransaction(req.body);
-          res.redirect('/revenue?message=Revenue added successfully');
+          req.session.message = 'Revenue added successfully';
+          res.redirect('/revenue');
         } catch (error) {
           if (error instanceof BadRequestException) {
             res.render('funds', {
@@ -77,11 +79,31 @@ export default class TransactionsController{
           }
         }
       }
+
+      addExpenditure = async (req: Request, res: Response) => {
+        try {
+          const result = await this.transactionService.submitExpenditure(req.body);
+          req.session.message = 'Expenditure added successfully';
+          res.redirect('/expenditures');
+        } catch (error) {
+          if (error instanceof BadRequestException) {
+            res.render('funds', {
+              error: error.message,
+              formData: req.body // Send the original form data back
+            });
+          } else {
+            // Pass unexpected errors to the global error handler
+            next(error);
+          }
+        }
+      }
+
       settleRevenue = async (req: Request, res: Response, next) => {
         try {
-          await this.transactionService.settleRevenueTrx(req.query.ref);
+          await this.transactionService.settleRevenueTrx(req.body);
           // Redirect with success message as a query parameter
-          res.redirect('/revenue?message=Transaction successfully settled!');
+          req.session.message = 'Transaction successfully settled!';
+            res.redirect('/revenue');
         } catch (error) {
           if (error instanceof BadRequestException) {
             res.render('transactions', {
@@ -97,11 +119,13 @@ export default class TransactionsController{
       deleteRevenue = async (req: Request, res: Response) => {
         try {
             const result = await this.transactionService.deleteRevenue(req.body.revenueId, req.body.userId);
-            res.redirect('/revenue?message=Revenue record successfully deleted');
+            req.session.message = 'Revenue record successfully deleted';
+            res.redirect('/revenue');
         } catch (error) {
             console.error(error); // Log the error for debugging
             // Redirect to an error page with a custom message
-            res.status(400).redirect(`/revenue?error=${encodeURIComponent(error.message)}`);
+            req.session.error = `${error.message}`;
+            res.redirect('/revenue');
         }
     };
     }

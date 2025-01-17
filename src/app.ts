@@ -13,14 +13,26 @@ import jwt from 'jsonwebtoken';
 import VultAccount from "./entities/vult-account.entity";
 import dataSource from "./datasource/data-source";
 import Account from "./entities/account.entity";
-import DVEA from "./entities/dvea.entity";
+const session = require('express-session');
 import { Transaction } from "./entities/transactions.entity";
 import Revenue, { PaymentMode } from "./entities/revenue.entity";
 import cookieParser from "cookie-parser";
 import { Privilege, User } from "./entities/user.entity";
-import RevenueType from "./entities/revenue-types.entity";
+import { MoreThan } from "typeorm";
+import Expenditure from "./entities/expenditure.entity";
 
 const app = express();
+app.use(
+  session({
+    secret: '.wnkdcuo20c', // Replace with your actual secret key
+    resave: false, // Prevents resaving session on every request
+    saveUninitialized: true, // Saves uninitialized sessions
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      maxAge: 24 * 60 * 60 * 1000, // Session expires after 1 day
+    },
+  })
+);
 
 // Use helmet and configure Content Security Policy (CSP)
 
@@ -88,8 +100,8 @@ app.get('/', requireLogin, decodedAuth, async (_: Request, res: Response) => {
 });
 
 app.get('/auth', (_: Request, res: Response) => {
- 
-  const error = _.query.error || null;
+  const error = _.session.error;
+  _.session.error = null;   // Clear the error after displaying
   res.render('users/auth.ejs', {error});
 });
 
@@ -103,28 +115,100 @@ app.get('/revenue', requireLogin, decodedAuth, async (_: Request, res: Response)
   const revenueRepo = dataSource.getRepository(Revenue);
   // Fetch transactions with related account and user data
   const revenues = await revenueRepo.createQueryBuilder('revenue')
-  .leftJoinAndSelect('revenue.revenueType', 'revenueType')
+  .where('revenue.credit = :credit', { credit: 0 }) // Correctly reference the parameter
+  .leftJoinAndSelect('revenue.vultAccount', 'vultAccount') // Join the vultAccount relation
   .getMany();
- 
 
-  const revenueTypeRepository = dataSource.getRepository(RevenueType);
-  const revenueTypes = await revenueTypeRepository.find({ select: ['id', 'name'] });
+ 
+  const vultRepo = dataSource.getRepository(VultAccount);
+  // Fetch transactions with related account and user data
+  const vults = await vultRepo.createQueryBuilder('vult')
+  .getMany();
+
+  const accountTypes = dataSource.getRepository(Account);
+  const accounts = await accountTypes.find({ select: ['id', 'accountNumber', 'accountName'] });
   const paymentModes = [
     ...Object.values(PaymentMode.CashOffice),
     ...Object.values(PaymentMode.BankDeposit),
     PaymentMode.PAYSTACK,
     PaymentMode.FLUTTERWAVE,
   ];
-
-  const message = _.query.message || null;
-  const error = _.query.error || null;
-  res.render('revenue/revenue.ejs', { user: res.locals.userDetails, revenues, revenueTypes, paymentModes: Object.values(paymentModes), message, error });
+  const message = _.session.message;
+  const error = _.session.error;
+  _.session.message = null; // Clear the message after displaying
+  _.session.error = null;   // Clear the error after displaying
+  res.render('revenue/revenue.ejs', { user: res.locals.userDetails, revenues, accounts, vults, paymentModes: Object.values(paymentModes), message, error });
 });
 
-app.get('/revenue/details/:id',requireLogin, decodedAuth, async (_: Request, res: Response) => {
+app.get('/revenue/details/:id', requireLogin, decodedAuth, async (_: Request, res: Response) => {
   const id = _.params.id
-  const data = await Revenue.findOne({where:{id}});
-  res.render('revenue/details.ejs', {data,user: res.locals.userDetails});
+  const data = await Revenue.findOne({where:{id, debit: MoreThan(0)},
+  relations: ['account', 'vultAccount', 'user'],});
+  
+  const vults = await VultAccount.find()
+  if (!vults) {
+    return res.status(404).send('Transaction not found');
+  }
+  res.render('revenue/details.ejs', {data, user: res.locals.userDetails, vults});
+});
+
+app.get('/settle/:id', requireLogin, decodedAuth, async (req: Request, res: Response) => {
+  const ref = req.params.id; // Retrieve the 'ref' parameter from the URL
+
+  try {
+    const revenueRecords = await Revenue.find({where:{ ref }});
+    
+    const vults = await VultAccount.find()
+    if (!vults) {
+      return res.status(404).send('Transaction not found');
+    }
+
+    const revenue = await Revenue.findOne({where:{ ref, debit: MoreThan(0) },
+    relations: ['account'],
+  });
+
+    res.render('revenue/settle.ejs', { revenueRecords, vults, revenue });
+  } catch (error) {
+    console.error('Error fetching transaction or credit records:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/fund/:id',async (_: Request, res: Response) => {
+  const id = _.params.id
+   const bank = await VultAccount.findOne({where:{id}})
+   const revenues = await Revenue.find({where:{vultAccountId: id, credit: MoreThan(0)}});
+  res.render('spend.ejs', {bank, revenues});
+});
+
+app.get('/expenditures', async (_: Request, res: Response) => {
+  const expenditureRepository = dataSource.getRepository(Expenditure);
+  const expenses = await expenditureRepository.createQueryBuilder('trx')
+    .leftJoinAndSelect('trx.vultAccount', 'vultAccount')
+    .getMany();
+  const message = _.session.message;
+  const error = _.session.error;
+  _.session.message = null; // Clear the message after displaying
+  _.session.error = null;   // Clear the error after displaying
+  res.render('expense/list.ejs', {expenses, message, error});
+});
+
+app.get('/expenditure/spend', async (_: Request, res: Response) => {
+  const vults = await VultAccount.find();
+  res.render('expense/spend.ejs', {vults});
+});
+
+app.get('/voucher/details/:id', async (_: Request, res: Response) => {
+  const id = _.params.id;
+  const expenditure = await Expenditure.findOne({
+    where: { id },
+    relations: ['vultAccount', 'user'],
+  });
+
+  if (!expenditure) {
+    return res.status(404).send('Expenditure not found');
+  }
+  res.render('expense/voucher.ejs', {expenditure});
 });
 
 app.get('/invoice', (_: Request, res: Response) => {
@@ -134,6 +218,7 @@ app.get('/invoice', (_: Request, res: Response) => {
 app.get('/profile',requireLogin, decodedAuth, async (_: Request, res: Response) => {
   res.render('users/profile.ejs',{user: res.locals.userDetails});
 });
+
 app.get('/users',requireLogin, decodedAuth, async (_: Request, res: Response) => {
   const PrivilegeNames = {
     [Privilege.SuperAdmin]: "SuperAdmin",
@@ -142,10 +227,13 @@ app.get('/users',requireLogin, decodedAuth, async (_: Request, res: Response) =>
     [Privilege.Clerk]: "Clerk",
 };
   const users = await User.find();
-  const message = _.query.message || null;
-  const error = _.query.error || null;
+  const message = _.session.message;
+  const error = _.session.error;
+  _.session.message = null; // Clear the message after displaying
+  _.session.error = null;   // Clear the error after displaying
   res.render('users/users.ejs',{user: res.locals.userDetails, users, PrivilegeNames, message, error});
 });
+
 app.get('/transactions', async (req: Request, res: Response) => {
   const transactionRepository = dataSource.getRepository(Transaction);
   const transactions = await transactionRepository.createQueryBuilder('trx')
@@ -156,24 +244,12 @@ app.get('/transactions', async (req: Request, res: Response) => {
 });
 
 
-app.get('/account/view', async (_: Request, res: Response) => {
+app.get('/accounts', async (_: Request, res: Response) => {
   const accRepository = dataSource.getRepository(Account)
   const accounts = await accRepository.find();
-
-  res.render('account.ejs', {accounts});
-});
-
-app.get('/revenue-type', async (_: Request, res: Response) => {
-  const rtRepository = dataSource.getRepository(RevenueType) // rt is revenue type
-  const rts = await rtRepository.find({
-    relations: ["vultAccount"],
-  });
-
-  const accRepository = dataSource.getRepository(VultAccount);
-  const accounts = await accRepository.find({ select: ['id', 'name'] });
-
-
-  res.render('revenue/revenue-type.ejs', {rts, accounts});
+  const message = _.session.message;
+  _.session.message = null;
+  res.render('account.ejs', {accounts,message});
 });
 
 app.get('/funds', async (_: Request, res: Response) => {

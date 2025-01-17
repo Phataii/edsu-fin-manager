@@ -1,7 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import Account from "./account.entity";
-import RevenueType from "./revenue-types.entity";
+import VultAccount from "./vult-account.entity";
 
 export namespace PaymentMode {
   export enum CashOffice {
@@ -19,34 +19,55 @@ export namespace PaymentMode {
   export const FLUTTERWAVE = 'flutterwave';
 }
 
-
 @Entity("revenue")
 export default class Revenue extends BaseEntity{
-    @PrimaryGeneratedColumn("uuid") id: string;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
+
+    @Column({nullable: true})
+    mode: string;
+
+    @Column({nullable: true})
+    ref: string;
+
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    debit: number; // Debit amount
+  
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    credit: number; // Credit amount
+
+    @Column({nullable: true})
+    desc: string;
+
     @Column({ type: 'varchar', nullable: true })
     jvNo: string; // JV NO
 
-    @Column({unique: true, nullable: true}) dtid: string; //deposit ticket
-    @Column({nullable: true}) source: string; //UTME OR ...
-    @Column({nullable: true}) amount: number;
-    @Column({nullable: true}) dateReceived: Date
-    @Column({nullable: true}) transactionDate: Date
-    @Column({nullable: true}) mode: string;
-    @Column({nullable: true}) ref: string;
-    @Column({nullable: true}) desc: string;
+    @Column({ type: 'varchar', nullable: true })
+    dveaNo: string; // Optional DVEA number
 
-    @ManyToOne(() => Account, (account) => account.revenues, {
-        onDelete: 'CASCADE', // Optional: Delete revenues if the account is deleted
-        onUpdate: 'CASCADE',
-      })
-      @Index()
-      account: Account; // Foreign key linking to the Account
+    @Column({nullable: true})
+    source: string; //UTME OR ...
 
-      @Column({ default: false })
-      settled: boolean; 
+    @Column({ default: false })
+    settled: boolean; 
 
-      @Column({ nullable: true }) revenueTypeId: string;
-    @ManyToOne(() => RevenueType) revenueType: RevenueType;
+    @Column({ type: 'varchar', nullable: true })
+    dtNo: string; // Deposit Ticket No
+
+    @Column({nullable: true})
+    transactionDate: Date
+
+    @Column({nullable: true})
+    dateReceived: Date
+
+    @Column({ type: 'varchar', nullable: true })
+    image: string; // Path or URL to the associated image
+
+    @Column({ nullable: true }) accountId: string;
+    @ManyToOne(() => Account) account: Account;
+
+    @Column({ nullable: true }) vultAccountId: string;
+    @ManyToOne(() => VultAccount) vultAccount: VultAccount;
 
     @Column({ nullable: true }) userId: string;
     @ManyToOne(() => User) user: User;
